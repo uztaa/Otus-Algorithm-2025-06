@@ -6,7 +6,7 @@ set(TEST_SOURCES
     RookTest.cpp 
     BishopTest.cpp 
     QueenTest.cpp
-)
+ "FastBitUtilsTest.cpp")
 
 add_executable(MoveableTests ${TEST_SOURCES})
 
