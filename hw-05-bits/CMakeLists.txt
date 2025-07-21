@@ -16,7 +16,7 @@ set(CPP_SOURCES
 set(TEST_SOURCES
     tests/all_test_runner.cpp
     tests/BitUtilsTest.cpp
-    tests/KingMovesTest.cpp
+    tests/KingTest.cpp
     tests/KnightTest.cpp
 )
 
