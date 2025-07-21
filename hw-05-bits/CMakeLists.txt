@@ -1,4 +1,4 @@
-project(hw-05-bits)
+project(Bits)
 
 cmake_minimum_required(VERSION 3.15)
 
@@ -9,22 +9,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(include)
 
 set(CPP_SOURCES
+    src/main.cpp 
     src/King.cpp
     src/Knight.cpp
+    src/Rook.cpp src/Bishop.cpp src/Queen.cpp 
+    src/BitBoardPrinter.cpp    
 )
 
-set(TEST_SOURCES
-    tests/all_test_runner.cpp
-    tests/BitUtilsTest.cpp
-    tests/KingTest.cpp
-    tests/KnightTest.cpp
-)
+add_library(BitsLib STATIC ${CPP_SOURCES})
+add_executable(Bits src/main.cpp)
+target_link_libraries(Bits PRIVATE BitsLib)
 
-add_executable(MoveableTests ${CPP_SOURCES} ${TEST_SOURCES})
-
-
-target_include_directories(MoveableTests PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(MoveableTests gtest_main)
-
-include(GoogleTest)
-gtest_discover_tests(MoveableTests)
+# Добавляем тесты
+add_subdirectory(tests)

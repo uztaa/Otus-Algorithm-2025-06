@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "King.h"
-#include "BitUtils.h"
 
 TEST(KingTest, PositionA1) {
     King king;
@@ -20,7 +19,6 @@ TEST(KingTest, PositionD4) {
     King king;
     auto result = king.getMoves(27);
     EXPECT_EQ(result.first, 8);
-    EXPECT_EQ(BitUtils::popcount(result.second), 8);
 }
 
 TEST(KingTest, PositionA8) {

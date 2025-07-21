@@ -1,4 +1,7 @@
+// King.cpp
+
 #include "King.h"
+#include <BitUtils.h>
 
 constexpr uint64_t FILE_A = 0x0101010101010101ULL;
 constexpr uint64_t FILE_H = 0x8080808080808080ULL;
@@ -19,12 +22,8 @@ std::pair<int, uint64_t> King::getMoves(int position) const {
     if (position > 7 && (king & FILE_A) == 0) mask |= king >> 9;
     if (position > 7 && (king & FILE_H) == 0) mask |= king >> 7;
 
-    int count = 0;
-    uint64_t temp = mask;
-    while (temp) {
-        count += temp & 1;
-        temp >>= 1;
-    }
+    // Используем BitUtils для подсчёта количества ходов
+    int count = BitUtils::popcount(mask);
 
     return {count, mask};
 }

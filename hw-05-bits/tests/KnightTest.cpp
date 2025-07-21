@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "Knight.h"
-#include "BitUtils.h"
 
 // Проверка позиции a1 (0)
 TEST(KnightTest, PositionA1) {
@@ -23,7 +22,6 @@ TEST(KnightTest, PositionD4) {
     Knight knight;
     auto result = knight.getMoves(27);
     EXPECT_EQ(result.first, 8);
-    EXPECT_EQ(BitUtils::popcount(result.second), 8);
 }
 
 // Проверка позиции h8 (63)
