@@ -9,19 +9,8 @@ public:
     using BinaryInsertionSorter::binarySearch;
 };
 
-/*
-// Пустой массив — возвращаем позицию 0
-TEST(BinaryInsertionSorterBinarySearchTest, EmptyArray) {
-    BinaryInsertionSorterTestable sorter;
-    std::vector<Record> arr;
-    size_t comparisons = 0;
-    int pos = sorter.binarySearch(arr, Record(10, "x"), 0, 0, comparisons);
-    EXPECT_EQ(pos, 0);
-}
-*/
-
 // Вставка в начало массива
-TEST(BinaryInsertionSorterBinarySearchTest, InsertAtBeginning) {
+TEST(BinaryInsertionSorterTest, InsertAtBeginning) {
     BinaryInsertionSorterTestable sorter;
     std::vector<Record> arr = {
         Record(20, "a"), Record(40, "b"), Record(60, "c")
@@ -32,7 +21,7 @@ TEST(BinaryInsertionSorterBinarySearchTest, InsertAtBeginning) {
 }
 
 // Вставка в конец массива
-TEST(BinaryInsertionSorterBinarySearchTest, InsertAtEnd) {
+TEST(BinaryInsertionSorterTest, InsertAtEnd) {
     BinaryInsertionSorterTestable sorter;
     std::vector<Record> arr = {
         Record(20, "a"), Record(40, "b"), Record(60, "c")
@@ -43,7 +32,7 @@ TEST(BinaryInsertionSorterBinarySearchTest, InsertAtEnd) {
 }
 
 // Вставка в середину массива
-TEST(BinaryInsertionSorterBinarySearchTest, InsertInMiddle) {
+TEST(BinaryInsertionSorterTest, InsertInMiddle) {
     BinaryInsertionSorterTestable sorter;
     std::vector<Record> arr = {
         Record(20, "a"), Record(40, "b"), Record(60, "c")
@@ -54,7 +43,7 @@ TEST(BinaryInsertionSorterBinarySearchTest, InsertInMiddle) {
 }
 
 // Вставка дубликата ключа — должен вставиться после всех таких ключей
-TEST(BinaryInsertionSorterBinarySearchTest, InsertDuplicate) {
+TEST(BinaryInsertionSorterTest, InsertDuplicate) {
     BinaryInsertionSorterTestable sorter;
     std::vector<Record> arr = {
         Record(1, "a"), Record(2, "b"), Record(2, "c"), Record(3, "d")
@@ -67,14 +56,14 @@ TEST(BinaryInsertionSorterBinarySearchTest, InsertDuplicate) {
 }
 
 // Проверка уже отсортированного массива
-TEST(BinaryInsertionSorterBinarySearchTest, ReturnCurrentPositionInSortedArray) {
+TEST(BinaryInsertionSorterTest, ReturnCurrentPositionInSortedArray) {
     BinaryInsertionSorterTestable sorter;
     std::vector<Record> arr = {
         Record(1, "a"),
         Record(2, "b"),
         Record(3, "c"),
-         Record(4, "d"),
-          Record(5, "e")
+        Record(4, "d"),
+        Record(5, "e")
     };
     size_t comparisons = 0;
     size_t pos = sorter.binarySearch(arr, Record(3, "c"), 0, arr.size() - 1, comparisons);

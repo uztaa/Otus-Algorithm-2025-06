@@ -1,9 +1,8 @@
 #include <gtest/gtest.h>
 #include <vector>
 #include "Sortable.h"
+#include "../src/sort/BinaryInsertionSorter.cpp"
 
-// Подключаем тестируемый класс
-#include "../src/sort/BinaryInsertionSorter.cpp" // Или подключите .h-файл, если он у вас есть
 
 // Вспомогательная функция для проверки отсортированного массива
 bool isSorted(const std::vector<Record>& arr) {
@@ -42,8 +41,6 @@ TEST(BinaryInsertionSorterTest, HandlesSortedArray) {
     EXPECT_EQ(shifts, 0); // Не должно быть сдвигов
 }
 
-/*
-
 // Проверка пустого массива
 TEST(BinaryInsertionSorterTest, HandlesEmptyArray) {
     std::vector<Record> data;
@@ -66,8 +63,6 @@ TEST(BinaryInsertionSorterTest, HandlesSingleElement) {
     EXPECT_EQ(comparisons, 0); // Нет смысла искать
     EXPECT_EQ(shifts, 0);      // Ничего не сдвигается
 }
-
-
 
 // Проверка массива в обратном порядке
 TEST(BinaryInsertionSorterTest, HandlesReverseArray) {
@@ -96,13 +91,10 @@ TEST(BinaryInsertionSorterTest, HandlesDuplicates) {
 
 // Проверка массива с одинаковыми значениями
 TEST(BinaryInsertionSorterTest, HandlesAllEqualElements) {
-    std::vector<Record> data = { Record(7, "g"), Record(7, "g"), Record(7, "g"), Record(7, "g"), Record(7, "g")};
+    std::vector<Record> data = { Record(7, "a"), Record(7, "b"), Record(7, "c"), Record(7, "d"), Record(7, "e")};
     BinaryInsertionSorter sorter;
     auto [comparisons, shifts] = sorter.sort(data);
 
     EXPECT_TRUE(isSorted(data));
     EXPECT_EQ(shifts, 0); // Элементы не двигаются
 }
-
-
-*/
