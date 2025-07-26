@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <memory>
-#include "record.h"
-#include "../src/search/IndexSearcher.cpp"  // Лучше через .h в реальном проекте
+#include "Record.h"
+#include "../src/search/IndexSearcher.cpp"
 
 /// Хелпер для создания вектора записей
 std::vector<Record> makeRecords(std::vector<int> keys) {

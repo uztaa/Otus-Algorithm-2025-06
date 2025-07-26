@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "record.h"
+#include "Record.h"
 
 TEST(RecordTest, KeyAccess) {
     Record r(42, "example");

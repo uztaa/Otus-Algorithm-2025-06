@@ -1,6 +1,6 @@
 ﻿// Специальный тест на проверку сортировки с использованием бинарного поиска
 #include <gtest/gtest.h>
-#include "record.h"
+#include "Record.h"
 #include "../include/BinaryInsertionSorter.h"
 
 // Тестовый класс для доступа к protected методу binarySearch

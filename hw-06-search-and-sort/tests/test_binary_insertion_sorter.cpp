@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <vector>
-#include "Record.h"
 #include "Sortable.h"
 
 // Подключаем тестируемый класс
