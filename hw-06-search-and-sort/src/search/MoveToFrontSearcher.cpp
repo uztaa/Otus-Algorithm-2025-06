@@ -1,20 +1,23 @@
 #include "Searchable.h"
 
-/** 
-* @file MoveToFrontSearcher.cpp
-* @brief Implementation of the Move-to-Front search strategy.
-*/
+/** * @brief Реализация индексного поиска (Index Search)
+ *
+ * Алгоритм разбивает массив на блоки с фиксированным шагом и создает индексные массивы:
+ * - index: массив ключей через равные интервалы
+ * - pindex: позиции соответствующих ключей в исходном массиве
+ * Затем линейно ищется блок, в котором может находиться искомый ключ, и в нем проводится линейный поиск.
+ */
 class MoveToFrontSearcher : public Searchable {
 public:
     Record* search(std::vector<Record>& arr, int key) override {
         for (size_t i = 0; i < arr.size(); ++i) {
-			// Check if the current record's key matches the search key
+			// Проверяем, совпадает ли ключ текущей записи с искомым ключом
             if (arr[i].getKey() == key) {
                 Record found = arr[i];
-				// Shift all elements before the found record to the right
+				// Сдвигаем все элементы влево, начиная с найденного
                 for (size_t j = i; j > 0; --j)
                     arr[j] = arr[j - 1];
-                // Move the found record to the front of the array
+				// Помещаем найденный элемент в начало массива
                 arr[0] = found;
                 return &arr[0];
             }

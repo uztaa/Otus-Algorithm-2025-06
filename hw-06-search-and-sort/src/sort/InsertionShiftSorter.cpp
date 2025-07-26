@@ -2,7 +2,10 @@
 
 /** 
  * @file InsertionShiftSorter.cpp
- * @brief Implementation of the Insertion Sort algorithm using shifts instead of swaps.
+ * @brief Реализация класса InsertionShiftSorter для сортировки вставками с использованием сдвигов.
+ *
+ * Этот класс реализует алгоритм сортировки вставками, который перемещает элементы влево,
+ * чтобы вставить текущий элемент на его правильное место в отсортированной части массива.
  */
 class InsertionShiftSorter : public Sortable {
 public:
@@ -11,7 +14,7 @@ public:
         for (size_t i = 1; i < arr.size(); ++i) {
             Record temp = arr[i];
             size_t j = i;
-			// Move the current element to its correct position in the sorted part of the array
+			// Перемещение элементов влево, пока не найдём правильное место для текущего элемента
             while (j > 0 && ++comparisons && arr[j - 1].getKey() > temp.getKey()) {
                 arr[j] = arr[j - 1];
                 ++shifts;

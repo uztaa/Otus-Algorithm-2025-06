@@ -3,19 +3,21 @@
 #include <utility>
 #include "Record.h"
 
-/** 
-* @brief Abstract base class for sorting
-* This class defines the interface for sorting algorithms.
-* It provides a pure virtual method `sort` that takes a vector of `Record`
-* and returns a pair containing the number of comparisons and swaps made during sorting.
-*/
+/** * @file Sortable.h
+ * @brief Интерфейс для классов, которые могут сортировать массивы записей.
+ * 
+ * Этот интерфейс определяет метод sort, который должен быть реализован в классах,
+ * осуществляющих сортировку массивов объектов типа Record.
+ */
 class Sortable {
 public:
-    /**
-     * @brief Sorts a vector of Record objects.
+    /** 
+     * @brief Сортирует массив записей.
      * 
-     * @param arr The vector of Record objects to be sorted.
-     * @return A pair containing the number of comparisons and swaps made during sorting.
+     * Метод должен быть реализован в производных классах для выполнения сортировки.
+     * 
+     * @param arr Массив записей, который нужно отсортировать.
+     * @return Пара, содержащая количество сравнений и сдвигов, выполненных в процессе сортировки.
 	 */
     virtual std::pair<size_t, size_t> sort(std::vector<Record>& arr) = 0;
     virtual ~Sortable() = default;

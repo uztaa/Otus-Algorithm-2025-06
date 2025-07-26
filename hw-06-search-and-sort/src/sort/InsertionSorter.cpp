@@ -2,7 +2,10 @@
 
 /** 
  * @file InsertionSorter.cpp
- * @brief Implementation of the Insertion Sort algorithm.
+ * @brief Реализация класса InsertionSorter для сортировки вставками.
+ *
+ * Этот класс реализует алгоритм сортировки вставками, который последовательно проходит по массиву
+ * и вставляет каждый элемент на его правильное место в отсортированной части массива.
  */
 class InsertionSorter : public Sortable {
 public:
@@ -10,7 +13,7 @@ public:
         size_t comparisons = 0, swaps = 0;
         for (size_t i = 1; i < arr.size(); ++i) {
             size_t j = i;
-			// Move the current element to its correct position in the sorted part of the array
+			// Перемещение элементов влево, пока не найдём правильное место для текущего элемента
             while (j > 0 && ++comparisons && arr[j].getKey() < arr[j - 1].getKey()) {
                 std::swap(arr[j], arr[j - 1]);
                 ++swaps;

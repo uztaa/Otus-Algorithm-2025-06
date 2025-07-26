@@ -1,9 +1,12 @@
 #include "Sortable.h"
 #include <algorithm>
 
-/** 
+/**
  * @file BubbleSorter.cpp
- * @brief Implementation of the Bubble Sort algorithm.
+ * @brief Реализация класса BubbleSorter для сортировки пузырьком.
+ *
+ * Этот класс реализует алгоритм сортировки пузырьком, который сравнивает пары соседних элементов
+ * и меняет их местами, если они расположены в неправильном порядке.
  */
 class BubbleSorter : public Sortable {
 public:
@@ -12,7 +15,7 @@ public:
         for (size_t i = 0; i < arr.size(); ++i) {
             for (size_t j = arr.size() - 1; j > i; --j) {
                 ++comparisons;
-				// Compare adjacent elements and swap if they are out of order
+				// Если текущий элемент больше следующего, меняем их местами
                 if (arr[j].getKey() < arr[j - 1].getKey()) {
                     std::swap(arr[j], arr[j - 1]);
                     ++swaps;
