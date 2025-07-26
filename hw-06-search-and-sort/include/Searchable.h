@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "record.h"
+#include "Record.h"
 
 /**
  * Searchable interface for searching records in a collection.

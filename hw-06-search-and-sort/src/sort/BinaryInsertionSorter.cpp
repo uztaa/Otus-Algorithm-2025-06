@@ -28,8 +28,7 @@ size_t BinaryInsertionSorter::binarySearch(const std::vector<Record>& arr,
 
 			// Если ключ больше или равен текущему элементу, продолжаем поиск в левой части
             right = mid - 1;
-        }     
-        
+        }       
     }
 
     return left;

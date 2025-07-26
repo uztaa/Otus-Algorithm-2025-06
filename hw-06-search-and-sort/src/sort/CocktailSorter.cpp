@@ -1,8 +1,7 @@
 #include <vector>
 #include <utility>
 #include <string>
-#include "record.h"
-#include "sortable.h"
+#include "Sortable.h"
 
 /**
  * @brief Реализация шейкер-сортировки (Cocktail Sort).

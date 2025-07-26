@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <utility>
-#include "record.h"
+#include "Record.h"
 
 /** 
 * @brief Abstract base class for sorting

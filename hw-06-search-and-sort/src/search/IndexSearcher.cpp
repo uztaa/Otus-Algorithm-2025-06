@@ -1,7 +1,7 @@
 #include <vector>
 #include <cstddef>
-#include "record.h"
-#include "searchable.h"
+#include "Record.h"
+#include "Searchable.h"
 
 /**
  * @brief Реализация индексного поиска (Index Search)

@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <utility>
-#include "record.h"
-#include "sortable.h"
+#include "Record.h"
+#include "Sortable.h"
 
 /**
  * @brief Имплементация сортировки вставками с использованием бинарного поиска.

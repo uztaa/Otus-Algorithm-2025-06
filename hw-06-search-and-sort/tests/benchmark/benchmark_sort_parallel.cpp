@@ -9,10 +9,8 @@
 #include <string>
 #include <iomanip>
 #include "../include/Sortable.h"
-#include "../include/Record.h"
 #include "../src/sort/BubbleSorter.cpp"
 #include "../src/sort/InsertionSorter.cpp"
-#include "../src/sort/ShellSorter.cpp"
 #include "../src/sort/CocktailSorter.cpp"
 #include "../src/sort/InsertionShiftSorter.cpp"
 #include "../src/sort/BinaryInsertionSorter.cpp"
@@ -182,8 +180,7 @@ int main() {
 }
 
 /*
-
-Benchmark duration: 169 minutes
+Benchmark results:
 +-------------------------+------------+------------+------------+------------+
 | Algorithm               | 100        | 1000       | 10000      | 100000     |
 +-------------------------+------------+------------+------------+------------+
@@ -192,10 +189,9 @@ Benchmark duration: 169 minutes
 | CocktailSorter          | 22         | 1988       | 76110      | 10078481   |
 | InsertionShiftSorter    | 0          | 52         | 2406       | 236521     |
 | InsertionSort           | 45         | 1911       | 73615      | 9811897    |
-| ShellSort               | 0          | 61         | 1150       | 16281      |
 | ShellSorter.Classic     | 3          | 71         | 1183       | 16227      |
 | ShellSorter.Hibbard     | 8          | 43         | 1103       | 14184      |
 | ShellSorter.Sedgewick   | 1          | 82         | 808        | 8708       |
 +-------------------------+------------+------------+------------+------------+
-
+P.S. Time in milliseconds.
 */
