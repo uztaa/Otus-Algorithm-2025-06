@@ -16,9 +16,8 @@ add_executable(benchmark_sort tests/benchmark/benchmark_sort_parallel.cpp)
 target_link_libraries(benchmark_sort sorting_search_lib)
 
 
-
 # Unit-tests
-set(TEST_INCLUDE_FILES tests/record_test.cpp "tests/test_index_searcher.cpp" "tests/test_binary_insertion_sorter.cpp" "tests/test_binary_insertion_sorter_binary_search.cpp")
+set(TEST_INCLUDE_FILES tests/record_test.cpp "tests/test_index_searcher.cpp" "tests/test_binary_insertion_sorter_binary_search.cpp" "tests/test_sort_all.cpp" "tests/test_custom_shell_sorter.cpp")
 add_executable(unit_tests ${TEST_INCLUDE_FILES})
 
 target_link_libraries(unit_tests sorting_search_lib gtest gtest_main)

@@ -54,7 +54,7 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
         }
         std::cout << "find position=" << pos
             << " for insert element (" << current_record.getKey() << ", " << current_record.getValue() << ")" << std::endl;
-        */
+       */ 
 
         // Если найденная позиция — текущая, не делаем вставку
         if (pos == i) {
@@ -65,15 +65,8 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
 
         // Если позиции разные, но значения совпадают
         if (arr[pos].getKey() == current_record.getKey()) {
-            // если не последний элемент, не делаем вставку
-            if (i != arr.size() - 1) {
-                // FIXME: Лог для отладки
-                //std::cout << "Keys are equal, no need to shift elements." << std::endl;
-                continue;
-            }
-            
-            // если последний элемент, то корреткируем вставку с сохранением порядка
-            // Например последняя 2-ка в массиве [1, 2, 2, 3, 3, 2] должна встать на 3-ю позицию.
+            // корреткируем вставку с сохранением порядка
+            // Например, последняя 2-ка в массиве [1, 2, 2, 3, 3, 2] должна встать на 3-ю позицию.
             while (pos < arr.size()) {
                 if (arr[pos].getKey() != current_record.getKey()) {
                     break;
@@ -87,8 +80,9 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
             // иначе сдвигаем элементы вправо
             for (size_t j = i; j > pos; --j) {
                 arr[j] = arr[j - 1];
-                std::cout << "shift >> " << j << std::endl;
                 ++shifts;
+                // FIXME: Лог для отладки
+                //std::cout << "shift >> " << j << std::endl;
             }
 
             // Вставляем ключ на найденную позицию
