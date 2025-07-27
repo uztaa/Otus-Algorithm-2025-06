@@ -1,5 +1,6 @@
 ﻿#include "BinaryInsertionSorter.h"
 #include <iostream>
+#include "SortEvent.h"
 
 /**
  * @file BinaryInsertionSorter.cpp
@@ -16,6 +17,7 @@ size_t BinaryInsertionSorter::binarySearch(const std::vector<Record>& arr,
         // Вычисление среднего индекса
         size_t mid = (left + right) / 2;
         
+		notify(CompareEvent(getName(), mid, right + 1));
         ++comparisons;
 
         if (arr[mid].getKey() < key.getKey()) {
@@ -35,6 +37,13 @@ size_t BinaryInsertionSorter::binarySearch(const std::vector<Record>& arr,
 }
 
 std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) {
+    notify(StartEvent(getName()));
+
+    if (arr.empty()) {
+        notify(FinishEvent(getName()));
+        return { 0, 0 };
+	}
+
     size_t comparisons = 0;
     size_t shifts = 0;
     // специальный флаг необходимости сдвига
@@ -46,34 +55,20 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
 		// Поиск позиции для вставки текущего ключа
         size_t pos = binarySearch(arr, current_record, 0, i - 1, comparisons);
 
-        // FIXME: Лог для отладки
-        /*
-        std::cout << "Into array: ";
-        for (const auto& rec : arr) {
-            std::cout << "(" << rec.getKey() << ", " << rec.getValue() << ") ";
-        }
-        std::cout << "find position=" << pos
-            << " for insert element (" << current_record.getKey() << ", " << current_record.getValue() << ")" << std::endl;
-       */ 
-
         // Если найденная позиция — текущая, не делаем вставку
-        if (pos == i) {
-			// FIXME: Лог для отладки
-			//std::cout << "Position is equal to current index, no need to shift elements." << std::endl;
-            // Нужно ли тут ++comparisons;
-            continue;
-        };
+        if (pos == i) continue;
 
         // Если позиции разные, но значения совпадают
         if (arr[pos].getKey() == current_record.getKey()) {
             // корреткируем вставку с сохранением порядка
             // Например, последняя 2-ка в массиве [1, 2, 2, 3, 3, 2] должна встать на 3-ю позицию.
             while (pos < arr.size()) {
+                ++comparisons;
+                notify(CompareEvent(getName(), pos, i));
                 if (arr[pos].getKey() != current_record.getKey()) {
                     break;
                 }
                 ++pos;
-                // Нужно ли тут ++comparisons;
             }
         };
 
@@ -83,14 +78,15 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
             for (size_t j = i; j > pos; --j) {
                 arr[j] = arr[j - 1];
                 ++shifts;
-                // FIXME: Лог для отладки
-                //std::cout << "shift >> " << j << std::endl;
+                notify(SwapEvent(getName(), j, j - 1));
             }
 
             // Вставляем ключ на найденную позицию
             arr[pos] = current_record;
+            notify(SetEvent(getName(), pos, current_record));
         }
     }
 
+    notify(FinishEvent(getName()));
     return { comparisons, shifts };
 }

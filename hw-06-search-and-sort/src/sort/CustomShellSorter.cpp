@@ -1,4 +1,5 @@
 #include "BaseSorter.h"
+#include "SortEvent.h"
 #include <vector>
 #include <utility>
 #include <functional>
@@ -23,16 +24,29 @@ public:
         size_t comparisons = 0, swaps = 0;
         std::vector<size_t> gaps = generateGaps(arr.size());
 
+        notify(StartEvent(getName()));
+
         for (size_t gap : gaps) {
             for (size_t i = gap; i < arr.size(); ++i) {
                 size_t j = i;
-                while (j >= gap && ++comparisons && arr[j - gap].getKey() > arr[j].getKey()) {
-                    std::swap(arr[j], arr[j - gap]);
-                    ++swaps;
-                    j -= gap;
+                while (j >= gap) {
+                    ++comparisons;
+                    notify(CompareEvent(getName(), j - gap, j));
+
+                    if (arr[j - gap].getKey() > arr[j].getKey()) {
+                        std::swap(arr[j], arr[j - gap]);
+                        ++swaps;
+                        notify(SwapEvent(getName(), j, j - gap));
+                        j -= gap;
+                    }
+                    else {
+                        break;
+                    }
                 }
             }
         }
+
+        notify(FinishEvent(getName()));
         return { comparisons, swaps };
     }
 
