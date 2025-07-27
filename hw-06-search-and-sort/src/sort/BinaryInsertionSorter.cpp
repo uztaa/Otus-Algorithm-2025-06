@@ -60,6 +60,7 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
         if (pos == i) {
 			// FIXME: Лог для отладки
 			//std::cout << "Position is equal to current index, no need to shift elements." << std::endl;
+            // Нужно ли тут ++comparisons;
             continue;
         };
 
@@ -72,6 +73,7 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
                     break;
                 }
                 ++pos;
+                // Нужно ли тут ++comparisons;
             }
         };
 

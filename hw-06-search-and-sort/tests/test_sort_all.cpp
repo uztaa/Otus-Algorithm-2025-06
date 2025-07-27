@@ -2,7 +2,7 @@
 #include <gtest/gtest-typed-test.h>
 
 #include "utils/SortTestUtils.h"
-#include "Sortable.h"
+#include "BaseSorter.h"
 
 // Подключи все сортировщики:
 #include "../src/sort/BubbleSorter.cpp"
@@ -10,15 +10,22 @@
 #include "../src/sort/InsertionShiftSorter.cpp"
 #include "../src/sort/InsertionSorter.cpp"
 #include "../src/sort/BinaryInsertionSorter.cpp"
+#include "../src/sort/LoggingSortListener.cpp"
 
 // Шаблонный тест-класс
 template <typename T>
 class SorterTest : public ::testing::Test {
 public:
-    std::unique_ptr<Sortable> sorter;
+    std::unique_ptr<BaseSorter> sorter;
 
     void SetUp() override {
         sorter = std::make_unique<T>();
+
+		// Устанавливаем имя сортировщика для логирования
+		sorter->setName(typeid(T).name());
+
+        // Добавляем слушателя для логирования
+        sorter->addListener(std::make_shared<LoggingSortListener>());
     }
 };
 

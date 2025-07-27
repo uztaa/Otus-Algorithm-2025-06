@@ -1,4 +1,4 @@
-#include "Sortable.h"
+#include "BaseSorter.h"
 #include <vector>
 #include <utility>
 #include <functional>
@@ -7,7 +7,7 @@
 /**
  * @brief ShellSorter Ч реализаци€ сортировки Ўелла с возможностью выбора стратегии разрывов.
  */
-class CustomShellSorter : public Sortable {
+class CustomShellSorter : public BaseSorter {
 public:
     enum class GapStrategy {
         Classic,   // n/2, n/4, ..., 1

@@ -1,19 +1,21 @@
 cmake_minimum_required(VERSION 3.15)
 project(sorting_search_lib)
 
+include_directories(include)
 
 # Подпроект библиотеки
 add_library(sorting_search_lib
     src/sort/BubbleSorter.cpp
     src/search/SequentialSearcher.cpp
- "src/search/MoveToFrontSearcher.cpp" "src/search/TranspositionSearcher.cpp" "src/sort/InsertionSorter.cpp" "src/sort/InsertionShiftSorter.cpp" "src/sort/BinaryInsertionSorter.cpp" "src/sort/CocktailSorter.cpp" "src/search/IndexSearcher.cpp" "src/sort/CustomShellSorter.cpp")
+    src/sort/BaseSorter.cpp
+ "src/search/MoveToFrontSearcher.cpp" "src/search/TranspositionSearcher.cpp" "src/sort/InsertionSorter.cpp" "src/sort/InsertionShiftSorter.cpp" "src/sort/BinaryInsertionSorter.cpp" "src/sort/CocktailSorter.cpp" "src/search/IndexSearcher.cpp" "src/sort/CustomShellSorter.cpp" "src/sort/LoggingSortListener.cpp")
 
 target_include_directories(sorting_search_lib PUBLIC include)
 
 # Установка флагов компиляции
-add_executable(benchmark_sort tests/benchmark/benchmark_sort_parallel.cpp)
+#add_executable(benchmark_sort tests/benchmark/benchmark_sort_parallel.cpp)
 # Линкуем с библиотекой сортировок
-target_link_libraries(benchmark_sort sorting_search_lib)
+#target_link_libraries(benchmark_sort sorting_search_lib)
 
 
 # Unit-tests

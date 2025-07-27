@@ -1,24 +1,52 @@
+
 #pragma once
 #include <vector>
-#include <utility>
+#include <memory>
+#include <string>
 #include "Record.h"
+#include "SortListener.h"
 
-/** * @file Sortable.h
- * @brief Интерфейс для классов, которые могут сортировать массивы записей.
- * 
- * Этот интерфейс определяет метод sort, который должен быть реализован в классах,
- * осуществляющих сортировку массивов объектов типа Record.
+class SortEvent;
+
+/**
+ * @file Sortable.h
+ * @brief Интерфейс для сортировщиков.
+ *
+ * Этот интерфейс определяет методы для сортировки массива записей,
+ * добавления слушателей событий сортировки и уведомления слушателей о событиях.
  */
 class Sortable {
 public:
-    /** 
-     * @brief Сортирует массив записей.
-     * 
-     * Метод должен быть реализован в производных классах для выполнения сортировки.
-     * 
-     * @param arr Массив записей, который нужно отсортировать.
-     * @return Пара, содержащая количество сравнений и сдвигов, выполненных в процессе сортировки.
-	 */
-    virtual std::pair<size_t, size_t> sort(std::vector<Record>& arr) = 0;
     virtual ~Sortable() = default;
+
+    /**
+     * @brief Метод для сортировки массива записей.
+     * @param arr Массив записей, который нужно отсортировать.
+     * @return Пара, содержащая количество сравнений и сдвигов.
+     */
+    virtual std::pair<size_t, size_t> sort(std::vector<Record>& arr) = 0;
+
+    /**
+     * @brief Метод для добавления слушателя событий сортировки.
+     * @param listener Умный указатель на объект, реализующий интерфейс SortListener.
+     */
+    virtual void addListener(std::shared_ptr<SortListener> listener) = 0;
+
+    /**
+    * @briefМетод для уведомления слушателей о событии сортировки
+    * @param event Событие сортировки, которое нужно уведомить слушателям.
+    */
+    virtual void notify(const SortEvent& event) = 0;
+
+    /**
+     * @brief Метод для установки имени сортировщика.
+     * @param name Имя сортировщика.
+     */
+    virtual void setName(const std::string& name) = 0;
+
+    /**
+    * @brief Метод для получения имени сортировщика.
+    * @return Имя сортировщика.
+    */
+    virtual std::string getName() const = 0;
 };

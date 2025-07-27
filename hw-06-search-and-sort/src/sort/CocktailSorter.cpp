@@ -1,13 +1,13 @@
 #include <vector>
 #include <utility>
 #include <string>
-#include "Sortable.h"
+#include "BaseSorter.h"
 
 /**
  * @brief –еализаци€ шейкер-сортировки (Cocktail Sort).
  * Ёто улучшенный вариант пузырьковой сортировки, выполн€ющий проход в обе стороны.
  */
-class CocktailSorter : public Sortable {
+class CocktailSorter : public BaseSorter {
 public:
     /**
      * @brief —ортирует вектор объектов Record по ключу.

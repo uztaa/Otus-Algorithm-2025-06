@@ -3,7 +3,7 @@
 #include <vector>
 #include <utility>
 #include "Record.h"
-#include "Sortable.h"
+#include "BaseSorter.h"
 
 /**
  * @brief »мплементаци€ сортировки вставками с использованием бинарного поиска.
@@ -11,7 +11,7 @@
  * @details
  * –еализует сортировку вставками с использованием бинарного поиска дл€ нахождени€ позиции вставки.
  */
-class BinaryInsertionSorter : public Sortable {
+class BinaryInsertionSorter : public BaseSorter {
 public:
     /** 
      * @brief —ортирует массив записей с использованием бинарного поиска.
