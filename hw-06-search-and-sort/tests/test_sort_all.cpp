@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gtest/gtest-typed-test.h>
 
+#include <string>
 #include "utils/SortTestUtils.h"
 #include "BaseSorter.h"
 
@@ -22,7 +23,8 @@ public:
         sorter = std::make_unique<T>();
 
 		// Устанавливаем имя сортировщика для логирования
-		sorter->setName(typeid(T).name());
+        std::string s(typeid(T).name());
+		sorter->setName(s.erase(0, 6)); // удаляем 'class '
 
         // Добавляем слушателя для логирования
         sorter->addListener(std::make_shared<LoggingSortListener>());

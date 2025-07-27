@@ -20,7 +20,7 @@ using namespace std;
 using namespace chrono;
 
 // Глобальные переменные должны быть объявлены заранее
-vector<size_t> sizes = { 100, 1000, 10000, 100000}; //, 1000000
+vector<size_t> sizes = { 100, 1000}; //, 10000, 100000, 1000000
 map<string, map<size_t, long long>> results;
 mutex resultMutex;
 

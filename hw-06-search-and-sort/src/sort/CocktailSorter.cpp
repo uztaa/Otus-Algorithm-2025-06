@@ -2,6 +2,7 @@
 #include <utility>
 #include <string>
 #include "BaseSorter.h"
+#include "SortEvent.h"
 
 /**
  * @brief Реализация шейкер-сортировки (Cocktail Sort).
@@ -22,8 +23,12 @@ public:
         size_t comparisons = 0;
         size_t swaps = 0;
 
-        if (arr.empty())
+        notify(StartEvent(getName()));
+
+        if (arr.empty()) {
+            notify(FinishEvent(getName()));
             return { comparisons, swaps };
+        }
 
         bool swapped = true;
         size_t start = 0;
@@ -35,10 +40,13 @@ public:
             // Прямой проход слева направо
             for (size_t i = start; i < end; ++i) {
                 ++comparisons;
+                notify(CompareEvent(getName(), i, i + 1));
+
                 if (arr[i].getKey() > arr[i + 1].getKey()) {
                     std::swap(arr[i], arr[i + 1]);
                     ++swaps;
                     swapped = true;
+                    notify(SwapEvent(getName(), i, i + 1));
                 }
             }
 
@@ -50,16 +58,20 @@ public:
             // Обратный проход справа налево
             for (size_t i = end; i > start; --i) {
                 ++comparisons;
+                notify(CompareEvent(getName(), i - 1, i));
+
                 if (arr[i - 1].getKey() > arr[i].getKey()) {
                     std::swap(arr[i - 1], arr[i]);
                     ++swaps;
                     swapped = true;
+                    notify(SwapEvent(getName(), i - 1, i));
                 }
             }
 
             ++start;
         }
 
+        notify(FinishEvent(getName()));
         return { comparisons, swaps };
     }
 };

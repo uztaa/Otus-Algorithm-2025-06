@@ -12,10 +12,10 @@ add_library(sorting_search_lib
 
 target_include_directories(sorting_search_lib PUBLIC include)
 
-# Установка флагов компиляции
-#add_executable(benchmark_sort tests/benchmark/benchmark_sort_parallel.cpp)
+# Установка флагов компиляции для бенчмарка
+add_executable(benchmark_sort tests/benchmark/benchmark_sort_parallel.cpp)
 # Линкуем с библиотекой сортировок
-#target_link_libraries(benchmark_sort sorting_search_lib)
+target_link_libraries(benchmark_sort sorting_search_lib)
 
 
 # Unit-tests
