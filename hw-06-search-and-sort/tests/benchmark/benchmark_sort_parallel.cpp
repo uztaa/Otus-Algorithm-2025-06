@@ -15,12 +15,13 @@
 #include "../src/sort/InsertionShiftSorter.cpp"
 #include "../src/sort/BinaryInsertionSorter.cpp"
 #include "../src/sort/CustomShellSorter.cpp"
+#include "ProgressBarListener.h"
 
 using namespace std;
 using namespace chrono;
 
 // Глобальные переменные должны быть объявлены заранее
-vector<size_t> sizes = { 100, 1000}; //, 10000, 100000, 1000000
+vector<size_t> sizes = { 100, 1000 }; //100, 1000 , 10000, 100000, 1000000
 map<string, map<size_t, long long>> results;
 mutex resultMutex;
 
@@ -28,7 +29,7 @@ mutex resultMutex;
 vector<Record> generateRandomData(size_t size) {
     random_device rd;
     mt19937 gen(rd());
-    uniform_int_distribution<> dist(1, 10000);
+    uniform_int_distribution<> dist(1, 1000000);
     vector<Record> vec;
     for (size_t i = 0; i < size; ++i) {
         vec.emplace_back(dist(gen), "x");
@@ -38,8 +39,14 @@ vector<Record> generateRandomData(size_t size) {
 
 // Бенчмарк одного алгоритма на всех размерах, используя копии общего массива
 void benchmark(const string name, unique_ptr<Sortable> sorter, const vector<size_t> sizes,
-    shared_ptr<map<size_t, vector<Record>>> originalData)
+    shared_ptr<map<size_t, vector<Record>>> originalData,
+    std::shared_ptr<ProgressBarListener> progress_bar_listener)
 {
+    sorter->setName(name);
+    // Устанавливаем слушателя прогресс-бара для сортировщика
+    sorter->addListener(progress_bar_listener);
+
+
     for (size_t sz : sizes) {
         auto it = originalData->find(sz);
         if (it == originalData->end()) {
@@ -143,26 +150,33 @@ int main() {
     cout << "random data generating..."  << endl;
 	// Генерация случайных данных для каждого размера
     auto originalDataPtr = make_shared<map<size_t, vector<Record>>>();
+
     for (size_t sz : sizes) {
         (*originalDataPtr)[sz] = generateRandomData(sz);
     }
 
     cout << "benchmark running... (please, wait)" << endl << endl;
-	// Запуск бенчмарков в отдельных потоках
+	
+    // Запуск бенчмарков в отдельных потоках
     vector<thread> threads;
-    // первая часть задания
-    threads.emplace_back(benchmark, "BubbleSort", make_unique<BubbleSorter>(), sizes, originalDataPtr);
-    threads.emplace_back(benchmark, "InsertionSort", make_unique<InsertionSorter>(), sizes, originalDataPtr);
-    threads.emplace_back(benchmark, "ShellSorter.Classic", make_unique<CustomShellSorter>(CustomShellSorter::GapStrategy::Classic), sizes, originalDataPtr);
 
-    // вторая часть задания
-    threads.emplace_back(benchmark, "CocktailSorter", make_unique<CocktailSorter>(), sizes, originalDataPtr);
-    threads.emplace_back(benchmark, "InsertionShiftSorter", make_unique<InsertionShiftSorter>(), sizes, originalDataPtr);
-    threads.emplace_back(benchmark, "BinaryInsertionSorter", make_unique<BinaryInsertionSorter>(), sizes, originalDataPtr);
+    // вычисляем ожидаемое дискретное время выполнения N*N
+	// для прогресс-бара, чтобы он мог корректно отображать прогресс
+    auto N = sizes[sizes.size() - 1]; // Используем последний размер для инициализации слушателя
+	// Создаем слушателя для прогресс-бара
+    auto progress_bar_listener = nullptr;
+    //auto progress_bar_listener = std::make_shared<ProgressBarListener>(N * N);
+    
+    threads.emplace_back(benchmark, "BubbleSort", make_unique<BubbleSorter>(), sizes, originalDataPtr, progress_bar_listener);
+    threads.emplace_back(benchmark, "InsertionSort", make_unique<InsertionSorter>(), sizes, originalDataPtr, progress_bar_listener);
+    threads.emplace_back(benchmark, "CocktailSorter", make_unique<CocktailSorter>(), sizes, originalDataPtr, progress_bar_listener);
+    threads.emplace_back(benchmark, "InsertionShiftSorter", make_unique<InsertionShiftSorter>(), sizes, originalDataPtr, progress_bar_listener);
+    threads.emplace_back(benchmark, "BinaryInsertionSorter", make_unique<BinaryInsertionSorter>(), sizes, originalDataPtr, progress_bar_listener);
 
     // алгоритмы ShellSort с разными реализациями стратегии выбора шагов.
-    threads.emplace_back(benchmark, "ShellSorter.Hibbard", make_unique<CustomShellSorter>(CustomShellSorter::GapStrategy::Hibbard), sizes, originalDataPtr);
-    threads.emplace_back(benchmark, "ShellSorter.Sedgewick", make_unique<CustomShellSorter>(CustomShellSorter::GapStrategy::Sedgewick), sizes, originalDataPtr);
+    threads.emplace_back(benchmark, "ShellSorter.Classic", make_unique<CustomShellSorter>(CustomShellSorter::GapStrategy::Classic), sizes, originalDataPtr, progress_bar_listener);
+    threads.emplace_back(benchmark, "ShellSorter.Hibbard", make_unique<CustomShellSorter>(CustomShellSorter::GapStrategy::Hibbard), sizes, originalDataPtr, progress_bar_listener);
+    threads.emplace_back(benchmark, "ShellSorter.Sedgewick", make_unique<CustomShellSorter>(CustomShellSorter::GapStrategy::Sedgewick), sizes, originalDataPtr, progress_bar_listener);
 
 
     for (auto& t : threads) {
@@ -172,8 +186,7 @@ int main() {
     auto end_benchmark = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::minutes>(end_benchmark - start_benchmark).count();
 
-    std::cout << "Benchmark duration: " << duration << " minutes" << std::endl;
-
+    std::cout << "\nBenchmark duration: " << duration << " minutes" << std::endl;
     printResults();
 
     return 0;

@@ -7,7 +7,9 @@
  * @brief Реализация базового класса BaseSorter для сортировщиков.
  */
 void BaseSorter::addListener(std::shared_ptr<SortListener> listener) {
-    listeners.push_back(listener);
+    if (listener != nullptr) {
+        listeners.push_back(listener);
+    }
 }
 
 void BaseSorter::notify(const SortEvent& event) {

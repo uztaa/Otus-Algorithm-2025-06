@@ -8,7 +8,7 @@ add_library(sorting_search_lib
     src/sort/BubbleSorter.cpp
     src/search/SequentialSearcher.cpp
     src/sort/BaseSorter.cpp
- "src/search/MoveToFrontSearcher.cpp" "src/search/TranspositionSearcher.cpp" "src/sort/InsertionSorter.cpp" "src/sort/InsertionShiftSorter.cpp" "src/sort/BinaryInsertionSorter.cpp" "src/sort/CocktailSorter.cpp" "src/search/IndexSearcher.cpp" "src/sort/CustomShellSorter.cpp" "src/sort/LoggingSortListener.cpp")
+ "src/search/MoveToFrontSearcher.cpp" "src/search/TranspositionSearcher.cpp" "src/sort/InsertionSorter.cpp" "src/sort/InsertionShiftSorter.cpp" "src/sort/BinaryInsertionSorter.cpp" "src/sort/CocktailSorter.cpp" "src/search/IndexSearcher.cpp" "src/sort/CustomShellSorter.cpp" "src/sort/LoggingSortListener.cpp"  "src/sort/ProgressBarListener.cpp")
 
 target_include_directories(sorting_search_lib PUBLIC include)
 
