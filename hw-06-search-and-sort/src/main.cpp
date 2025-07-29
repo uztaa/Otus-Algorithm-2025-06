@@ -10,17 +10,22 @@ const std::vector<std::string> sorterNames = {
     "BubbleSort", "InsertionSort", "CocktailSort", "ShellSort"
 };
 
+// --------- Настройки графики --------------
 // Размеры окна
-constexpr int WindowWidth = 1280;
-constexpr int WindowHeight = 720;
+constexpr int WindowWidth = 2500; //1280;
+constexpr int WindowHeight = 1500; // 720;
+
+// коэффицент увеличения всех виджетов и шрифтов
+constexpr float GlobalScale = 2.0f;
+// Размер панели управления
+constexpr int ControlSize = 500;
+
 
 int main() {
     // Создаем окно SFML
     sf::RenderWindow window(sf::VideoMode({ WindowWidth, WindowHeight }), "Sorting Visualizer");
     window.setFramerateLimit(60);
 
-    //IMGUI_CHECKVERSION();               // Вызов до CreateContext
-    //ImGui::CreateContext();             // Затем создаем контекст
     /*
     Не вызывайте ImGui::CreateContext() вручную, если используете ImGui-SFML — он сам создаёт контекст внутри ImGui::SFML::Init(window).
     */
@@ -34,8 +39,8 @@ int main() {
         return 1;
     }
 
-    ImGui::GetStyle().ScaleAllSizes(2.0f);         // увеличивает размеры всех виджетов
-    ImGui::GetIO().FontGlobalScale = 2.0f;         // увеличивает масштаб всех шрифтов
+    ImGui::GetStyle().ScaleAllSizes(GlobalScale);         // увеличивает размеры всех виджетов
+    ImGui::GetIO().FontGlobalScale = GlobalScale;         // увеличивает масштаб всех шрифтов
 
     sf::Clock deltaClock;
 
@@ -65,7 +70,7 @@ int main() {
 
         // Панель управления: слева, фиксированного размера
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);          // отступ слева и сверху
-        ImGui::SetNextWindowSize(ImVec2(300, WindowHeight - 20), ImGuiCond_Always);  // высота окна - отступы
+        ImGui::SetNextWindowSize(ImVec2(ControlSize, WindowHeight - 20), ImGuiCond_Always);  // высота окна - отступы
 
         ImGui::Begin("Control");
 
@@ -112,8 +117,8 @@ int main() {
         ImGui::End();
 
         // Панель визуализации: справа от Control
-        ImGui::SetNextWindowPos(ImVec2(320, 10), ImGuiCond_Always);         // Control (300) + отступ (10)
-        ImGui::SetNextWindowSize(ImVec2(WindowWidth - 330, WindowHeight - 20), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(ControlSize + 20, 10), ImGuiCond_Always);  // ControlSize + отступ (10)
+        ImGui::SetNextWindowSize(ImVec2(WindowWidth - ControlSize - 30, WindowHeight - 20), ImGuiCond_Always);
 
         // Панель визуализации (будет здесь)
         ImGui::Begin("Visualization");
