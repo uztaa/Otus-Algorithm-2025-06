@@ -17,6 +17,13 @@ public:
 
     SortEvent(const std::string& name = "unknown") : sorterName(name) {}
 
+    //  онструкторы копировани€ и перемещени€ должны быть доступны
+    SortEvent(const SortEvent&) = default;
+    SortEvent(SortEvent&&) noexcept = default;
+
+    SortEvent& operator=(const SortEvent&) = default;
+    SortEvent& operator=(SortEvent&&) noexcept = default;
+
     /** @brief ѕолучает тип событи€ сортировки.
      * 
 	 * @return —трока, представл€юща€ тип событи€.
