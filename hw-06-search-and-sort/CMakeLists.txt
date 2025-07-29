@@ -3,6 +3,7 @@ project(sorting_search_lib)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# === Исходники библиотеки сортировки ===
 include_directories(include)
 
 add_library(sorting_search_lib
@@ -23,11 +24,11 @@ add_library(sorting_search_lib
 
 target_include_directories(sorting_search_lib PUBLIC include)
 
-# Benchmark
+# === Benchmark ===
 add_executable(benchmark_sort tests/benchmark/benchmark_sort_parallel.cpp)
 target_link_libraries(benchmark_sort sorting_search_lib)
 
-# Unit-tests
+# === Unit-tests ===
 add_executable(unit_tests
     tests/record_test.cpp
     tests/test_index_searcher.cpp
@@ -37,75 +38,33 @@ add_executable(unit_tests
 )
 target_link_libraries(unit_tests sorting_search_lib gtest gtest_main)
 
-
-add_executable(main src/main.cpp)
-
+# === Подключение SFML через vcpkg ===
 set(vcpkg_installed "C:/Users/toban/source/repos/vcpkg/installed/x64-windows")
 set(SFML_DIR "${vcpkg_installed}/share/sfml")
-set(imgui_DIR "${vcpkg_installed}/share/imgui")
-set(ImGui-SFML_DIR "${vcpkg_installed}/share/imgui-sfml")
 
-# Подключение SFML
-find_package(SFML 3.0.1 COMPONENTS System Window Graphics Audio Network CONFIG REQUIRED)
-target_link_libraries(main PRIVATE SFML::Network SFML::Graphics SFML::Window SFML::Audio SFML::System)
+find_package(SFML 3 COMPONENTS System Window Graphics Audio Network CONFIG REQUIRED)
 
-# VCPKG подключит imgui через IMGUI-SFML
-find_package(ImGui-SFML CONFIG REQUIRED)
-target_link_libraries(main PRIVATE ImGui-SFML::ImGui-SFML)
+# === Подключение ImGui и ImGui-SFML из исходников ===
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+set(IMGUI_SFML_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui-sfml)
+set(IMGUI_SFML_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+add_subdirectory(${IMGUI_SFML_DIR})
 
+# === Основной GUI-экзешник ===
+add_executable(main "src/main.cpp")
 
-if (MSVC)
-    add_custom_command(TARGET main POST_BUILD
-        # Копируем ImGui-SFML dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:ImGui-SFML::ImGui-SFML> "$<TARGET_FILE_DIR:main>/ImGui-SFML_d.dll"
+target_include_directories(main PRIVATE
+    ${IMGUI_DIR}
+    ${IMGUI_SFML_DIR}
+)
 
-        # Копируем SFML dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:SFML::Graphics> "$<TARGET_FILE_DIR:main>/sfml-graphics-d.dll"
-
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:SFML::Window> "$<TARGET_FILE_DIR:main>/sfml-window-d.dll"
-
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:SFML::System> "$<TARGET_FILE_DIR:main>/sfml-system-d.dll"
-
-        # Копируем freetype.dll как freetyped.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/bin/freetype.dll" "$<TARGET_FILE_DIR:main>/freetyped.dll"
-
-        # Трюк с подменой релизных DLL в Debug версии
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/debug/bin/sfml-graphics-d-3.dll" "$<TARGET_FILE_DIR:main>/sfml-graphics-d.dll"
-
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/debug/bin/sfml-window-d-3.dll" "$<TARGET_FILE_DIR:main>/sfml-window-d.dll"
-
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/debug/bin/sfml-system-d-3.dll" "$<TARGET_FILE_DIR:main>/sfml-system-d-3.dll"
-
-        # Копируем zlib1.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/bin/zlib1.dll" "$<TARGET_FILE_DIR:main>/zlib1.dll"
-
-            # Копируем bz2.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/bin/bz2.dll" "$<TARGET_FILE_DIR:main>/bz2.dll"
-
-            # Копируем libpng16.dll
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/bin/libpng16.dll" "$<TARGET_FILE_DIR:main>/libpng16.dll"
-
-            # brotlidec.dll
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/bin/brotlidec.dll" "$<TARGET_FILE_DIR:main>/brotlidec.dll"
-
-            #brotlicommon.dll
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${vcpkg_installed}/bin/brotlicommon.dll" "$<TARGET_FILE_DIR:main>/brotlicommon.dll"
-    )
-endif()
-
-
-  
+target_link_libraries(main PRIVATE
+    sorting_search_lib
+    ImGui-SFML
+    SFML::Graphics
+    SFML::Window
+    SFML::System
+    SFML::Audio
+    SFML::Network
+)
