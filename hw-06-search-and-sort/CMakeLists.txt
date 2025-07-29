@@ -38,6 +38,8 @@ add_executable(unit_tests
 )
 target_link_libraries(unit_tests sorting_search_lib gtest gtest_main)
 
+if (MSVC)
+
 # === Подключение SFML через vcpkg ===
 set(vcpkg_installed "C:/Users/toban/source/repos/vcpkg/installed/x64-windows")
 set(SFML_DIR "${vcpkg_installed}/share/sfml")
@@ -69,7 +71,7 @@ target_link_libraries(main PRIVATE
     SFML::Network
 )
 
-if (MSVC)
+
     # Путь к установленным vcpkg DLL
     set(VCPKG_BIN_DIR "${CMAKE_SOURCE_DIR}/vcpkg_installed/x64-windows/bin")
 
