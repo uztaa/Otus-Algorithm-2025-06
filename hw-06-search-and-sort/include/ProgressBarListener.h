@@ -14,6 +14,13 @@ struct EventData {
     std::string type;
 };
 
+/** 
+ * @brief  ласс дл€ отображени€ прогресс-бара в консоли при сортировке.
+ * 
+ * Ётот класс реализует интерфейс SortListener и отображает прогресс сортировки
+ * в виде прогресс-бара в консоли. ќн работает в отдельном потоке, чтобы не блокировать
+ * основной поток выполнени€ программы.
+ */
 class ProgressBarListener : public SortListener {
 public:
     ProgressBarListener(size_t totalSteps, int barWidth = 50);
