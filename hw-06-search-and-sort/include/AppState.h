@@ -10,7 +10,7 @@
  */
 class AppState {
 private:
-    std::vector<ColoredRecord> array;           // Массив записей для отображения и сортировки
+    std::vector<ColoredRecord> coloredRecords;           // Массив записей для отображения и сортировки
     std::vector<SortEvent> events;             // Очередь событий визуализации
     std::size_t currentEventIndex = 0;         // Индекс текущего события визуализации
     AppMode mode = AppMode::Stopped;           // Текущее состояние приложения
@@ -20,8 +20,8 @@ public:
      * 
      * @return Ссылка на вектор ColoredRecord, представляющий текущий массив записей.
      */
-    const std::vector<ColoredRecord>& getArray() const {
-        return array;
+    const std::vector<ColoredRecord>& getColoredRecords() const {
+        return coloredRecords;
     }
     
     /** @brief Получает текущее состояние приложения.
@@ -59,7 +59,7 @@ public:
 	/** 
     * @brief Конструктор для инициализации состояния приложения с массивом записей и событиями сортировки.
 	* @param arr Массив записей, который будет использоваться в приложении для визуализации сортировки.
-	* @param evts Вектор событий сортировки, которые будут использоваться для визуализации.
+	* @param sortEvents Вектор событий сортировки, которые будут использоваться для визуализации.
 	* @details Этот конструктор позволяет инициализировать состояние приложения с заданным массивом записей и событиями сортировки.
 	* @note Конструктор перемещения и копирования удалены, чтобы предотвратить несанкционированное копирование или перемещение состояния приложения.
 	* @warning Убедитесь, что массив записей и события сортировки корректно инициализированы перед использованием этого конструктора.
@@ -68,12 +68,12 @@ public:
 	* @see AppState& operator=(const AppState&) для запрета копирования присваивания.
 	* @see AppState& operator=(AppState&&) для запрета перемещения присваивания.
 	*/
-    AppState(std::vector<Record> randonArray, std::vector<SortEvent> evts)
-		: events(std::move(evts)), currentEventIndex(0) {
+    AppState(std::vector<Record> records, std::vector<SortEvent> sortEvents)
+		: events(std::move(sortEvents)), currentEventIndex(0) {
         // Инициализация массива ColoredRecord из массива Record
-		array.reserve(randonArray.size());
-        for (const auto& record : randonArray) {
-            array.emplace_back(record.getKey(), record.getValue());
+        coloredRecords.reserve(records.size());
+        for (const auto& record : records) {
+            coloredRecords.emplace_back(record.getKey(), record.getValue());
 		}
 	}
 

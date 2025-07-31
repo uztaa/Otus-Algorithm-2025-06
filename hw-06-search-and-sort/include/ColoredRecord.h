@@ -18,4 +18,22 @@ private:
 public:
     ColoredRecord(int key, std::string value, sf::Color col = sf::Color::Red)
         : Record{ key, value }, color(col) {}
+
+    /** 
+     * @brief Устанавливает цвет записи.
+     * 
+     * @param col Новый цвет для записи.
+	 */
+    void setColor(sf::Color col) {
+		color = col;
+	}
+
+    /** 
+     * @brief Получает цвет записи.
+     * 
+	 * @return Цвет записи.
+     */
+    sf::Color getColor() const {
+        return color;
+	}
 };
