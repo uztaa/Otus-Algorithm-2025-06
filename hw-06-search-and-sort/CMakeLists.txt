@@ -20,7 +20,9 @@ add_library(sorting_search_lib
     src/sort/CustomShellSorter.cpp
     src/sort/LoggingSortListener.cpp
     src/sort/ProgressBarListener.cpp
- "src/sort/RandomArrayGenerator.cpp" "src/sort/GuiSortListener.cpp" "src/gui/Visualizer.cpp")
+    src/sort/RandomArrayGenerator.cpp
+    src/sort/GuiSortListener.cpp
+)
 
 target_include_directories(sorting_search_lib PUBLIC include)
 

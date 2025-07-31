@@ -1,63 +1,116 @@
 #include <SFML/Graphics.hpp>
 #include <imgui.h>
 #include <imgui-SFML.h>
+
 #include <iostream>
 #include <vector>
 #include <string>
 
-// Простой список доступных сортировщиков
-const std::vector<std::string> sorterNames = {
-    "BubbleSort", "InsertionSort", "CocktailSort", "ShellSort"
-};
+#include "AppState.h"
 
-// --------- Настройки графики --------------
-// Размеры окна
-constexpr int WindowWidth = 2500; //1280;
-constexpr int WindowHeight = 1500; // 720;
-
-// коэффицент увеличения всех виджетов и шрифтов
+// Настройки окна и интерфейса (UI Settings)
+constexpr int WindowWidth = 2500;
+constexpr int WindowHeight = 1500;
 constexpr float GlobalScale = 2.0f;
-// Размер панели управления
 constexpr int ControlSize = 500;
 
 
+// Список доступных алгоритмов сортировки
+std::vector<std::string> sorterNames = {
+    "BubbleSort", "InsertionSort", "CocktailSort", "ShellSort"
+};
+// Индекс текущего выбранного алгоритма сортировки
+size_t currentSorterIndex = 0;
+
+AppState appState; // Состояние приложения
+
+// Функция для отрисовки панели управления
+void renderControlPanel() {
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(ControlSize, WindowHeight - 20), ImGuiCond_Always);
+
+    ImGui::Begin("Control");
+
+    if (ImGui::BeginCombo("Algorithm", sorterNames[currentSorterIndex].c_str())) {
+        for (int i = 0; i < sorterNames.size(); ++i) {
+            bool isSelected = (currentSorterIndex == i);
+            if (ImGui::Selectable(sorterNames[i].c_str(), isSelected)) {
+                currentSorterIndex = i;
+                std::cout << "[ComboBox] algorithm checked: " << sorterNames[i] << "\n";
+            }
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    if (ImGui::Button("Start")) {
+        appState.setMode(AppMode::Sorting);
+        std::cout << "[Button] pushed: Start\n";
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Pause")) {
+		appState.setMode(AppMode::Paused);
+        std::cout << "[Button] pushed: Pause\n";
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Stop")) {
+		appState.setMode(AppMode::Stopped);
+        std::cout << "[Button] pushed: Stop\n";
+    }
+
+	//std::cout << "[AppState] current mode: " << appState.getModeAsString() << "\n";
+    // FIXME: не работает отображение текущего состояния приложения
+	ImGui::Text("Status: %s", "test string"); // так работает, но не отображает текущее состояние приложения
+	//ImGui::Text("Status: %s", appState.getModeAsString()); // так не рабоатет, но должно отображать текущее состояние приложения
+
+    ImGui::End();
+};
+
+// Функция для отрисовки панели визуализации
+void renderVisualizationPanel() {
+    ImGui::SetNextWindowPos(ImVec2(ControlSize + 20, 10), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(WindowWidth - ControlSize - 30, WindowHeight - 20), ImGuiCond_Always);
+
+    ImGui::Begin("Visualization");
+
+    ImGui::Text("Visualization in progress...");
+
+    ImGui::End();
+};
+
+// Основная функция обработки событий и отрисовки интерфейса
+void process() {
+    renderControlPanel();
+    renderVisualizationPanel();
+}
+
+// Основная функция приложения
 int main() {
-    // Создаем окно SFML
-    sf::RenderWindow window(sf::VideoMode({ WindowWidth, WindowHeight }), "Sorting Visualizer");
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u( WindowWidth, WindowHeight )), "Sorting Visualizer");
     window.setFramerateLimit(60);
 
-    /*
-    Не вызывайте ImGui::CreateContext() вручную, если используете ImGui-SFML — он сам создаёт контекст внутри ImGui::SFML::Init(window).
-    */
     if (!ImGui::SFML::Init(window)) {
         std::cerr << "ImGui-SFML initialization failed!" << std::endl;
         return 1;
     }
-
-    if(!ImGui::GetCurrentContext()) {
+    if (!ImGui::GetCurrentContext()) {
         std::cerr << "ImGui context not created!" << std::endl;
         return 1;
     }
 
-    ImGui::GetStyle().ScaleAllSizes(GlobalScale);         // увеличивает размеры всех виджетов
-    ImGui::GetIO().FontGlobalScale = GlobalScale;         // увеличивает масштаб всех шрифтов
+    ImGui::GetStyle().ScaleAllSizes(GlobalScale);
+    ImGui::GetIO().FontGlobalScale = GlobalScale;
 
     sf::Clock deltaClock;
-
-    int currentSorterIndex = 0;
-    bool isSorting = false;
-    bool isPaused = false;
-
-    std::string statusText = "Prepare for start";
-
+   
     while (window.isOpen()) {
         sf::Time dt = deltaClock.restart();
 
-        // Цикл обработки событий
         while (auto opt = window.pollEvent()) {
             const sf::Event& event = *opt;
-
-            // обязательно вызываем ImGui обработку
             ImGui::SFML::ProcessEvent(window, event);
 
             if (event.is<sf::Event::Closed>()) {
@@ -67,63 +120,7 @@ int main() {
 
         ImGui::SFML::Update(window, dt);
 
-
-        // Панель управления: слева, фиксированного размера
-        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);          // отступ слева и сверху
-        ImGui::SetNextWindowSize(ImVec2(ControlSize, WindowHeight - 20), ImGuiCond_Always);  // высота окна - отступы
-
-        ImGui::Begin("Control");
-
-        // Выбор сортировщика
-        if (ImGui::BeginCombo("Algorithm", sorterNames[currentSorterIndex].c_str())) {
-            for (int i = 0; i < sorterNames.size(); ++i) {
-                bool isSelected = (currentSorterIndex == i);
-                if (ImGui::Selectable(sorterNames[i].c_str(), isSelected)) {
-                    currentSorterIndex = i;
-                    std::cout << "[ComboBox] algorithm checked: " << sorterNames[i] << "\n";
-                }
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
-
-        // Кнопки управления
-        if (ImGui::Button("Start")) {
-            isSorting = true;
-            isPaused = false;
-            statusText = "Sorting...";
-            std::cout << "[Button] pushed: Start\n";
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Pause")) {
-            isPaused = true;
-            statusText = "Pause";
-            std::cout << "[Button] pushed: Pause\n";
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Stop")) {
-            isSorting = false;
-            isPaused = false;
-            statusText = "Stopped";
-            std::cout << "[Button] pushed: Stop\n";
-        }
-
-        // Текст состояния
-        ImGui::Text("Status: %s", statusText.c_str());
-
-        ImGui::End();
-
-        // Панель визуализации: справа от Control
-        ImGui::SetNextWindowPos(ImVec2(ControlSize + 20, 10), ImGuiCond_Always);  // ControlSize + отступ (10)
-        ImGui::SetNextWindowSize(ImVec2(WindowWidth - ControlSize - 30, WindowHeight - 20), ImGuiCond_Always);
-
-        // Панель визуализации (будет здесь)
-        ImGui::Begin("Visualization");
-        ImGui::Text("Visualization in proress...");
-        ImGui::End();
+		process();
 
         window.clear(sf::Color(30, 30, 30));
         ImGui::SFML::Render(window);

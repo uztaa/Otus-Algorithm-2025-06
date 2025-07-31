@@ -1,5 +1,5 @@
-
 #pragma once
+
 #include "Sortable.h"
 #include <vector>
 #include <memory>
