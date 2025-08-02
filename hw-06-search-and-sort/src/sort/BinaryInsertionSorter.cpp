@@ -70,6 +70,8 @@ std::pair<size_t, size_t> BinaryInsertionSorter::sort(std::vector<Record>& arr) 
                 }
                 ++pos;
             }
+
+            if (pos == i) continue;
         };
 
        if (pos < arr.size()) {

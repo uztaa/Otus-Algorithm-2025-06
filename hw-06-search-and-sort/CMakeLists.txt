@@ -22,9 +22,13 @@ add_library(sorting_search_lib
     src/sort/ProgressBarListener.cpp
     src/sort/RandomArrayGenerator.cpp
     src/sort/GuiSortListener.cpp
-)
+ "src/sort/SortEventFormatter.cpp")
 
-target_include_directories(sorting_search_lib PUBLIC include)
+target_include_directories(sorting_search_lib 
+                PUBLIC include 
+#                PUBLIC sfml-graphics
+#                PUBLIC "C:/Users/toban/source/repos/vcpkg/installed/x64-windows/share/sfml"
+)
 
 # === Benchmark ===
 add_executable(benchmark_sort tests/benchmark/benchmark_sort_parallel.cpp)
@@ -37,8 +41,10 @@ add_executable(unit_tests
     tests/test_binary_insertion_sorter_binary_search.cpp
     tests/test_sort_all.cpp
     tests/test_custom_shell_sorter.cpp
+ "tests/random_array_generator_test.cpp" ) # "tests/generateData_test.cpp"
+target_link_libraries(unit_tests 
+        sorting_search_lib gtest gtest_main
 )
-target_link_libraries(unit_tests sorting_search_lib gtest gtest_main)
 
 if (MSVC)
 

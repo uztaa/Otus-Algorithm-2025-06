@@ -11,16 +11,17 @@
 class AppState {
 private:
     std::vector<ColoredRecord> coloredRecords;           // Массив записей для отображения и сортировки
-    std::vector<SortEvent> events;             // Очередь событий визуализации
+	std::vector<std::shared_ptr<SortEvent>> events; // Вектор событий сортировки, которые будут использоваться для визуализации
     std::size_t currentEventIndex = 0;         // Индекс текущего события визуализации
     AppMode mode = AppMode::Stopped;           // Текущее состояние приложения
+	std::string currentEventInfo; // Информация о текущем событии, используемая для отладки
 
 public:
     /** @brief Получает текущий массив записей.
      * 
      * @return Ссылка на вектор ColoredRecord, представляющий текущий массив записей.
      */
-    const std::vector<ColoredRecord>& getColoredRecords() const {
+    std::vector<ColoredRecord>& getColoredRecords() {
         return coloredRecords;
     }
     
@@ -68,14 +69,9 @@ public:
 	* @see AppState& operator=(const AppState&) для запрета копирования присваивания.
 	* @see AppState& operator=(AppState&&) для запрета перемещения присваивания.
 	*/
-    AppState(std::vector<Record> records, std::vector<SortEvent> sortEvents)
-		: events(std::move(sortEvents)), currentEventIndex(0) {
-        // Инициализация массива ColoredRecord из массива Record
-        coloredRecords.reserve(records.size());
-        for (const auto& record : records) {
-            coloredRecords.emplace_back(record.getKey(), record.getValue());
-		}
-	}
+    AppState(std::vector<ColoredRecord> coloredRecords, std::vector<std::shared_ptr<SortEvent>> events)
+		: coloredRecords(std::move(coloredRecords)), events(events), currentEventIndex(0) {
+        }
 
     // Запрет копирования и перемещения
     AppState(const AppState&) = delete;
@@ -90,12 +86,23 @@ public:
     bool hasNextEvent() const {
         return currentEventIndex < events.size();
     }
-    
-    /** @brief Получает следующее событие для визуализации.
-     * 
-     * @return Ссылка на следующее событие.
-     */
+
     const SortEvent& getNextEvent() {
-        return events[currentEventIndex++];
+        return *events[currentEventIndex++];
+    }
+
+    /** @brief Получает информацию о текущем событии для отладки.
+     * 
+     * @return Строка с информацией о текущем событии.
+	 */
+    const std::string& getCurrentEventInfo() const {
+        return currentEventInfo;
+    }
+    /** @brief Устанавливает информацию о текущем событии для отладки.
+     * 
+     * @param info Строка с информацией о текущем событии.
+     */
+    void setCurrentEventInfo(const std::string& info) {
+        currentEventInfo = info;
 	}
 };

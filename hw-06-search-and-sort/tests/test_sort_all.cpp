@@ -41,7 +41,16 @@ using SorterTypes = ::testing::Types<
 
 TYPED_TEST_SUITE(SorterTest, SorterTypes);
 
-// ѕример одного теста
+TYPED_TEST(SorterTest, ProblemSortedArray) {
+    // [24, 89, 66, 72, 36, 89, 43, 83, 81, 12]
+    std::vector<Record> data = {
+        {24, "a"}, {89, "b"}, {66, "c"}, {72, "d"}, {36, "e"}, {89, "f"}, {43, "g"}, {83, "h"}, {81, "i"}, {12, "j"}
+    };
+    auto [comparisons, shifts] = this->sorter->sort(data);
+    EXPECT_TRUE(isSorted(data));
+}
+
+// ѕроверка на массив, который уже отсортирован
 TYPED_TEST(SorterTest, HandlesSortedArray) {
     std::vector<Record> data = {
         {1, "a"}, {2, "b"}, {3, "c"}, {4, "d"}
@@ -51,7 +60,7 @@ TYPED_TEST(SorterTest, HandlesSortedArray) {
     EXPECT_EQ(shifts, 0);
 }
 
-// ѕроверка на массив, который уже отсортирован
+// ѕроверка массива, который отсортирован в обратном пор€дке
 TYPED_TEST(SorterTest, HandlesReverseArray) {
     std::vector<Record> data = {
         Record(5, "e"), Record(4, "d"),

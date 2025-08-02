@@ -12,10 +12,10 @@ std::vector<Record> RandomArrayGenerator::generate(size_t size) {
     std::vector<Record> result;
     result.reserve(size);
 
-    std::uniform_int_distribution<int> dist(0, 100);
+    std::uniform_int_distribution<int> dist(1, 100);
     for (size_t i = 0; i < size; ++i) {
         int randomKey = dist(rng_);
-        result.emplace_back(randomKey, "");
+        result.emplace_back(randomKey, "x");
     }
 
     return result;

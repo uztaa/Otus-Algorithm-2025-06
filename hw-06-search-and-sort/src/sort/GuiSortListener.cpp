@@ -10,14 +10,14 @@
  */
 class GuiSortListener : public SortListener {
 private:
-    std::vector<const SortEvent*> m_events;  // просто указатели, владения нет
+    std::vector<std::shared_ptr<SortEvent>> m_events;
 
 public:
     void onEvent(const SortEvent& event) override {
-        m_events.push_back(&event); // просто сохраняем адрес
+        m_events.push_back(event.clone());  // сохраняем копию
     }
 
-    const std::vector<const SortEvent*>& getSortEvents() const {
+    const std::vector<std::shared_ptr<SortEvent>>& getSortEvents() const {
         return m_events;
     }
 };
