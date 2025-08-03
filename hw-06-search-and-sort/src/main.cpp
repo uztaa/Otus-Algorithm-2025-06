@@ -23,8 +23,6 @@ constexpr int WindowHeight = 1500;
 constexpr float GlobalScale = 2.0f;
 constexpr int ControlSize = 500;
 
-// Таймеры и задержки
-constexpr int StepDelay = 450; // Задержка между шагами сортировки в миллисекундах
 
 // Цвета для визуализации
 const sf::Color DefaultColor = sf::Color::White;
@@ -44,9 +42,11 @@ size_t currentSorterIndex = 0;
 // Состояние приложения
 std::unique_ptr<AppState> appState = std::make_unique<AppState>(); 
 
+// Таймеры и задержки
+constexpr int StepDelay = 400; // Задержка между шагами сортировки в миллисекундах
 // Таймер для управления шагами сортировки
 sf::Clock stepClock;
-const sf::Time stepInterval = sf::milliseconds(200); // 200 мс между шагами
+const sf::Time stepInterval = sf::milliseconds(StepDelay); // задержка мс между шагами
 
 // Функция для отладки и вывода цветных записей в консоль
 void printColoredRecordsForDebug(const std::vector<ColoredRecord>& records) {
@@ -188,11 +188,6 @@ void render(sf::RenderWindow& window, sf::Vector2f panelPos, sf::Vector2f panelS
 
         window.draw(bar);
     }
-
-    window.display();
-
-    // пауза между отрисовкой столбцов
-    std::this_thread::sleep_for(std::chrono::milliseconds(StepDelay));
 }
 
 // Функция для отрисовки панели управления
@@ -332,7 +327,6 @@ int main() {
 
 		process(window);
 
-        window.clear(sf::Color(30, 30, 30));
         ImGui::SFML::Render(window);
         window.display();
     }
