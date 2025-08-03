@@ -246,11 +246,12 @@ void renderControlPanel() {
         std::cout << "[Button] pushed: Stop\n";
 
         // Очищаем состояние приложения
+		appState.reset(); // Удаляем текущее состояние приложения
         appState = std::make_unique<AppState>();
         std::cout << "AppState cleared\n";
     }
 
-//    ImGui::Text("Status: %s", appState->getModeAsString().c_str()); // Отображение текущего состояния приложения
+    //ImGui::Text("Status: %s", appState->getModeAsString().c_str()); // Отображение текущего состояния приложения
 
     ImGui::End();
 };
