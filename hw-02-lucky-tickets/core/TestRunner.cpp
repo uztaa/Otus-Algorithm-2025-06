@@ -2,9 +2,7 @@
 #include "TestParamLoader.h"
 #include "TestAssert.h"
 
-#include "LuckyTicketCounter.h"
-#include <sstream>
-#include <chrono>
+#include "Counter.h"
 
 void TestRunner::runTests(const Counter& counter, const std::string& dir, int n)
 {

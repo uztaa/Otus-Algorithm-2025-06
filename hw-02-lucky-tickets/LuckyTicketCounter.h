@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Counter.h"
+#include "core/Counter.h"
 
 class LuckyTicketCounter : public Counter {
 public:
