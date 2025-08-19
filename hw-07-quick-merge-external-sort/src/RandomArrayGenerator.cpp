@@ -2,21 +2,35 @@
 #include <algorithm>
 #include <chrono>
 
-RandomArrayGenerator::RandomArrayGenerator() {
-    auto seed = static_cast<unsigned>(std::chrono::steady_clock::now().time_since_epoch().count());
+RandomArrayGenerator::RandomArrayGenerator()
+{
+    // по умолчанию сидим по времени
+    auto seed = static_cast<uint32_t>(
+        std::chrono::steady_clock::now().time_since_epoch().count()
+    );
     rng_ = std::mt19937(seed);
 }
 
-std::vector<Record> RandomArrayGenerator::generate(size_t size) {
+void RandomArrayGenerator::setSeed(uint32_t seed) { 
+    rng_.seed(seed); 
+}
+
+std::vector<Record> RandomArrayGenerator::generate(size_t size)
+{
     std::vector<Record> result;
     result.reserve(size);
 
     std::uniform_int_distribution<int> dist(1, 100);
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i)
+    {
         int randomKey = dist(rng_);
-        result.emplace_back(randomKey, "x");
+        result.emplace_back(randomKey, ""); // пустая строка как value
     }
 
     return result;
 }
 
+std::vector<Record> RandomArrayGenerator::regenerate(size_t size, uint32_t seed) {
+    setSeed(seed);
+    return generate(size);
+}

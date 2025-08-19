@@ -6,17 +6,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Добавление путей для поиска заголовочных файлов
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# Сбор исходных файлов
+# Сбор исходников (только cpp)
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "include/*.hpp")
 
 # Создание библиотеки
-add_library(exception_handler_lib ${SOURCES} ${HEADERS})
+add_library(sorters_lib ${SOURCES})
+target_include_directories(sorters_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Настройка GoogleTest
+# ================= GoogleTest =================
 include(FetchContent)
 FetchContent_Declare(
     googletest
@@ -25,31 +22,24 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-# Включение тестирования
 enable_testing()
-
-# Сбор тестовых файлов
 file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp")
 
-# Создание исполняемого файла для тестов
 add_executable(run_tests ${TEST_SOURCES})
-
-# Линковка с библиотеками
-target_link_libraries(run_tests 
-    exception_handler_lib
+target_link_libraries(run_tests
+    sorters_lib
     GTest::gtest_main
     GTest::gmock_main
 )
 
-# Добавление тестов
 include(GoogleTest)
 gtest_discover_tests(run_tests)
 
-# Демонстрационное приложение
-#add_executable(demo examples/main.cpp)
-#target_link_libraries(demo exception_handler_lib)
+# ================= Demo =================
+add_executable(demo_quick_merge_sort demo/demo_quick_merge_sort.cpp)
+target_link_libraries(demo_quick_merge_sort sorters_lib)
 
-# Вывод информации о конфигурации
+# ================= Info =================
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
 message(STATUS "CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
