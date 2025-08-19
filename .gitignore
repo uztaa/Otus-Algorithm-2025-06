@@ -367,3 +367,10 @@ FodyWeavers.xsd
 
 # Temp folder for experiments
 **/tmp
+
+# VS Code
+.vscode
+build/
+
+# Bash scripts
+*.sh

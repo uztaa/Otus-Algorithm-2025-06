@@ -2,7 +2,7 @@
 
 on:
   push:
-    branches: [ master, hw-06-search-and-sort ]
+    branches: [ master, develop ]
   pull_request:
     branches: [ master ]
 
