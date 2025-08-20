@@ -38,3 +38,52 @@ TEST(FileSystemServiceTest, CreateWriteReadDeleteFile)
     ASSERT_TRUE(fs.deleteFile(filename));
     ASSERT_FALSE(fs.fileExists(filename));
 }
+
+// Дополнение теста для проверки mergeChunks и splitFileToChunks
+
+TEST(FileSystemServiceTest, SplitAndMergeChunks) {
+    FileSystemService fs;
+    std::string inputFile = "split_merge_test_input.txt";
+    std::string outputFile = "split_merge_test_output.txt";
+
+    // Создаем входной файл с числами (например, 30 чисел от 0 до 29)
+    std::vector<int> inputData;
+    for(int i = 0; i < 30; ++i) inputData.push_back(i);
+    ASSERT_TRUE(fs.writeLines(inputFile, inputData));
+
+    int T = 3;
+    int maxKey = 29;
+    std::vector<std::string> chunkFiles;
+
+    // Разбиваем файл на 3 частей
+    ASSERT_TRUE(fs.splitFileToChunks(inputFile, T, maxKey, chunkFiles));
+    ASSERT_EQ(chunkFiles.size(), 3);
+
+    // Проверяем, что chunk файлы существуют и содержат ожидаемые данные
+    for (const auto& chunkFile : chunkFiles) {
+        ASSERT_TRUE(fs.fileExists(chunkFile));
+    }
+
+    // Объединяем чанки обратно в outputFile
+    ASSERT_TRUE(fs.mergeChunks(chunkFiles, outputFile));
+    ASSERT_TRUE(fs.fileExists(outputFile));
+
+    // Считаем итоговый файл и сверяем с исходными данными (в данном случае просто конкатенация)
+    std::vector<int> mergedData;
+    ASSERT_TRUE(fs.readLines(outputFile, mergedData));
+    ASSERT_EQ(mergedData.size(), inputData.size());
+
+    // Т.к. данные в чанках лежат по ключам, итоговый файл будет частично отсортирован по чанкам
+    // Проверим что все элементы присутствуют (можно отсортировать для проверки)
+    std::sort(mergedData.begin(), mergedData.end());
+    std::vector<int> sortedInputData = inputData;
+    std::sort(sortedInputData.begin(), sortedInputData.end());
+    ASSERT_EQ(mergedData, sortedInputData);
+
+    // Удаляем временные файлы
+    for (const auto& chunkFile : chunkFiles) {
+        fs.deleteFile(chunkFile);
+    }
+    fs.deleteFile(inputFile);
+    fs.deleteFile(outputFile);
+}
