@@ -18,12 +18,12 @@ public:
      * @brief Генерирует файл с N строками, числа лежат в диапазоне от 1 до T.
      * 
      * @param filename Путь к создаваемому файлу.
-     * @param N Количество чисел (строк).
-     * @param T Максимальное значение чисел.
+     * @param rows Количество чисел (строк).
+     * @param maxValue Максимальное значение чисел.
      * @param seed Seed для генератора случайных чисел. Используется для воспроизводимости.
      * @return true при успешном создании файла, false при ошибках.
      */
-    bool generateFile(const std::string& filename, size_t N, int T, uint32_t seed);
+    bool generateFile(const std::string& filename, size_t rows, int maxValue, uint32_t seed);
 
 private:
     std::shared_ptr<FileService> fs_;

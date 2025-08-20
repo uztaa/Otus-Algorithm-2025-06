@@ -1,27 +1,31 @@
 #include <gtest/gtest.h>
 #include "FileGenerator.h"
 #include "InMemoryFileService.h"
+#include "FileSystemService.h"
 
-TEST(FileGeneratorTest, GeneratesCorrectFileInMemory) {
-    auto memFs = std::make_shared<InMemoryFileService>();
+TEST(FileGeneratorTest, GeneratesCorrectFileInMemory)
+{
+    // Arrange
+    auto memFs = std::make_shared<InMemoryFileService>(); // работает и с FileSystemService
     FileGenerator gen(memFs);
 
-    std::string testFile = "testFile.txt";
-    size_t N = 50;
-    int T = 100;
+    std::string testFile = "FileGeneratorTest.txt";
+    size_t rows = 5;
+    int maxValue = 15;
     uint32_t seed = 123;
 
-    bool created = gen.generateFile(testFile, N, T, seed);
+    // Act
+    bool created = gen.generateFile(testFile, rows, maxValue, seed);
+
+    // Assert
     ASSERT_TRUE(created);
     ASSERT_TRUE(memFs->fileExists(testFile));
 
     std::vector<int> contents;
     ASSERT_TRUE(memFs->readLines(testFile, contents));
-    ASSERT_EQ(contents.size(), N);
 
-    // Проверяем диапазон значений
-    for (int val : contents) {
-        EXPECT_GE(val, 1);
-        EXPECT_LE(val, T);
-    }
+    std::vector<int> expected = {10, 12, 14, 13, 8};
+    ASSERT_EQ(expected, contents);
+
+    ASSERT_TRUE(memFs->deleteFile(testFile));
 }

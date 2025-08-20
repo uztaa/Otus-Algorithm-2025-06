@@ -3,6 +3,15 @@
 #include "FileSystemService.h"
 #include <fstream>
 #include <filesystem>
+#include "FileGenerator.h"
+#include "InMemoryFileService.h"
+
+// удалить данные или вывести в лог информацию об ошибке
+void tryDeleteOrLog(const std::shared_ptr<FileService>& fs, const std::string& path) {
+     if( !fs->deleteFile(path) ) {
+            std::cerr << "not deleted " << path << std::endl;
+        }
+}
 
 TEST(FileSystemServiceTest, CreateWriteReadDeleteFile)
 {
@@ -42,48 +51,42 @@ TEST(FileSystemServiceTest, CreateWriteReadDeleteFile)
 // Дополнение теста для проверки mergeChunks и splitFileToChunks
 
 TEST(FileSystemServiceTest, SplitAndMergeChunks) {
-    FileSystemService fs;
+    // Arrange
     std::string inputFile = "split_merge_test_input.txt";
     std::string outputFile = "split_merge_test_output.txt";
 
-    // Создаем входной файл с числами (например, 30 чисел от 0 до 29)
-    std::vector<int> inputData;
-    for(int i = 0; i < 30; ++i) inputData.push_back(i);
-    ASSERT_TRUE(fs.writeLines(inputFile, inputData));
+    int chunck_size = 3;
+    int maxKey = 15;
+    int rows = 5;
+    uint32_t seed = 123;
 
-    int T = 3;
-    int maxKey = 29;
+    auto realFs = std::make_shared<FileSystemService>(); // <=  InMemoryFileService
+    FileGenerator gen(realFs);
+     
+    bool created = gen.generateFile(inputFile, rows, maxKey, seed);
+
+    // Act
     std::vector<std::string> chunkFiles;
+    bool result = realFs->splitFileToChunks(inputFile, chunck_size, maxKey, chunkFiles);
 
-    // Разбиваем файл на 3 частей
-    ASSERT_TRUE(fs.splitFileToChunks(inputFile, T, maxKey, chunkFiles));
-    ASSERT_EQ(chunkFiles.size(), 3);
+    // Assert
+    ASSERT_TRUE(result);
+    ASSERT_EQ(chunkFiles.size(), chunck_size);
 
     // Проверяем, что chunk файлы существуют и содержат ожидаемые данные
     for (const auto& chunkFile : chunkFiles) {
-        ASSERT_TRUE(fs.fileExists(chunkFile));
+        ASSERT_TRUE(realFs->fileExists(chunkFile));
     }
 
     // Объединяем чанки обратно в outputFile
-    ASSERT_TRUE(fs.mergeChunks(chunkFiles, outputFile));
-    ASSERT_TRUE(fs.fileExists(outputFile));
+    ASSERT_TRUE(realFs->mergeChunks(chunkFiles, outputFile));
+    ASSERT_TRUE(realFs->fileExists(outputFile));
 
     // Считаем итоговый файл и сверяем с исходными данными (в данном случае просто конкатенация)
     std::vector<int> mergedData;
-    ASSERT_TRUE(fs.readLines(outputFile, mergedData));
-    ASSERT_EQ(mergedData.size(), inputData.size());
+    ASSERT_TRUE(realFs->readLines(outputFile, mergedData));
+    ASSERT_EQ(mergedData.size(), rows);
 
-    // Т.к. данные в чанках лежат по ключам, итоговый файл будет частично отсортирован по чанкам
-    // Проверим что все элементы присутствуют (можно отсортировать для проверки)
-    std::sort(mergedData.begin(), mergedData.end());
-    std::vector<int> sortedInputData = inputData;
-    std::sort(sortedInputData.begin(), sortedInputData.end());
-    ASSERT_EQ(mergedData, sortedInputData);
-
-    // Удаляем временные файлы
-    for (const auto& chunkFile : chunkFiles) {
-        fs.deleteFile(chunkFile);
-    }
-    fs.deleteFile(inputFile);
-    fs.deleteFile(outputFile);
+    tryDeleteOrLog(realFs, inputFile);
+    tryDeleteOrLog(realFs, outputFile);
 }

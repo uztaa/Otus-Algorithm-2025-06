@@ -10,7 +10,17 @@
  */
 class FileSystemService : public FileService
 {
+private:
+    // директория, относительно которой будут создаваться файлы
+    std::string rootDir;
+    // получить реальный путь в системе
+    const std::string getRealPath(const std::string &path) const;
+
 public:
+    FileSystemService(const std::string &root = "/tmp"): rootDir(root) {};
+    // для внешнего обращения - относительный путь, 
+    // внутри сервис работает с реальным путем,
+    // учитывая rootDir
     bool createFile(const std::string &path) override;
     bool writeLines(const std::string &path, const std::vector<int> &lines) override;
     bool appendLines(const std::string &path, const std::vector<int> &lines) override;

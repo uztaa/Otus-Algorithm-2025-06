@@ -2,14 +2,19 @@
 #include <fstream>
 #include <filesystem>
 #include <iostream>
+#include <filesystem> // для std::filesystem::file_size
+
+const std::string FileSystemService::getRealPath(const std::string &path) const {
+    return rootDir + "/" + path;
+}
 
 bool FileSystemService::createFile(const std::string& path) {
-    std::ofstream ofs(path, std::ios::trunc);
+    std::ofstream ofs(getRealPath(path), std::ios::trunc);
     return ofs.is_open();
 }
 
 bool FileSystemService::writeLines(const std::string& path, const std::vector<int>& lines) {
-    std::ofstream ofs(path, std::ios::trunc);
+    std::ofstream ofs(getRealPath(path), std::ios::trunc);
     if (!ofs.is_open()) return false;
     for (int val : lines) {
         ofs << val << '\n';
@@ -18,7 +23,7 @@ bool FileSystemService::writeLines(const std::string& path, const std::vector<in
 }
 
 bool FileSystemService::appendLines(const std::string& path, const std::vector<int>& lines) {
-    std::ofstream ofs(path, std::ios::app);
+    std::ofstream ofs(getRealPath(path), std::ios::app);
     if (!ofs.is_open()) return false;
     for (int val : lines) {
         ofs << val << '\n';
@@ -27,7 +32,7 @@ bool FileSystemService::appendLines(const std::string& path, const std::vector<i
 }
 
 bool FileSystemService::readLines(const std::string& path, std::vector<int>& outLines) {
-    std::ifstream ifs(path);
+    std::ifstream ifs(getRealPath(path));
     if (!ifs.is_open()) return false;
     outLines.clear();
     int val;
@@ -39,70 +44,109 @@ bool FileSystemService::readLines(const std::string& path, std::vector<int>& out
 
 bool FileSystemService::deleteFile(const std::string& path) {
     std::error_code ec;
-    bool removed = std::filesystem::remove(path, ec);
+    std::string realPath = getRealPath(path);
+    bool removed = std::filesystem::remove(realPath, ec);
     if (!removed) {
-        std::cerr << "Failed to delete file: " << path << ", error: " << ec.message() << std::endl;
+        std::cerr << "Failed to delete file: " << realPath << ", error: " << ec.message() << std::endl;
     }
     return removed;
 }
 
 bool FileSystemService::fileExists(const std::string& path) {
-    return std::filesystem::exists(path);
+    return std::filesystem::exists(getRealPath(path));
 }
 
 bool FileSystemService::splitFileToChunks(const std::string& inputFile, int T, int maxKey, std::vector<std::string>& chunkFiles) {
     chunkFiles.clear();
-    // Создаем T пустых файлов chunk_0.txt,... и добавляем их в chunkFiles
+
+    // Создание пустых файлов перед записью
     for (int i = 0; i < T; ++i) {
         std::string filename = "chunk_" + std::to_string(i) + ".txt";
         if (!createFile(filename)) {
-            std::cerr << "Failed to create chunk file: " << filename << std::endl;
+            std::cerr << "Failed to create chunk file: " << getRealPath(filename) << std::endl;
             return false;
         }
         chunkFiles.push_back(filename);
     }
 
-    std::ifstream ifs(inputFile);
+    std::string realInputFile = getRealPath(inputFile);
+    std::ifstream ifs(realInputFile);
     if (!ifs.is_open()) {
-        std::cerr << "Failed to open input file: " << inputFile << std::endl;
+        std::cerr << "Failed to open input file: " << realInputFile << std::endl;
         return false;
     }
 
-    std::vector<std::ofstream> ofsVec;
-    for (const auto& file : chunkFiles) {
-        std::ofstream ofs(file, std::ios::app);
-        if (!ofs.is_open()) {
-            std::cerr << "Failed to open chunk file: " << file << std::endl;
-            return false;
-        }
-        ofsVec.push_back(std::move(ofs));
-    }
-
+    // FIXME: тут логика адовая, надо разобраться - очень плохое разбиение
     int interval = (maxKey + T - 1) / T;
     int val;
     while (ifs >> val) {
         int idx = val / interval;
         if (idx >= T) idx = T - 1;
-        ofsVec[idx] << val << '\n';
+
+        // Открываем соответствующий файл чанка, записываем и закрываем сразу
+        std::string chunkRealPath = getRealPath(chunkFiles[idx]);
+        std::ofstream ofs(chunkRealPath, std::ios::app);
+        if (!ofs.is_open()) {
+            std::cerr << "Failed to open chunk file for append: " << chunkRealPath << std::endl;
+            return false;
+        }
+        ofs << val << '\n';
     }
 
     return true;
 }
 
 bool FileSystemService::mergeChunks(const std::vector<std::string>& chunkFiles, const std::string& outputFile) {
-    std::ofstream ofs(outputFile, std::ios::trunc);
+    std::string realOut = getRealPath(outputFile);
+    std::ofstream ofs(realOut, std::ios::trunc);
     if (!ofs.is_open()) {
-        std::cerr << "Failed to open output file: " << outputFile << std::endl;
+        std::cerr << "Failed to open output file: " << realOut << std::endl;
         return false;
     }
 
     for (const auto& file : chunkFiles) {
-        std::ifstream ifs(file);
-        if (!ifs.is_open()) {
-            std::cerr << "Failed to open chunk file: " << file << std::endl;
+        std::string realFile = getRealPath(file);
+
+        // Проверяем размер файла чанка
+        std::error_code ec;
+        auto fileSize = std::filesystem::file_size(realFile, ec);
+        if (ec) {
+            std::cerr << "Failed to get file size for chunk file: " << realFile
+                      << ", error: " << ec.message() << std::endl;
             return false;
         }
+
+        if (fileSize == 0) {
+            // Пустой файл, пропускаем
+            continue;
+        }
+
+        std::ifstream ifs(realFile);
+        if (!ifs.is_open()) {
+            std::cerr << "Failed to open chunk file: " << realFile << std::endl;
+            return false;
+        }
+
         ofs << ifs.rdbuf();
+        if (!ofs) {
+            std::cerr << "Failed writing data from " << realFile << " to " << realOut << std::endl;
+            return false;
+        }
     }
+
+    ofs.flush();
+    if (!ofs) {
+        std::cerr << "Failed to flush output file: " << realOut << std::endl;
+        return false;
+    }
+
+    // Удаляем чанки
+    for (const auto& chunkFile : chunkFiles) {
+        if( !deleteFile(chunkFile) ) {
+            std::cerr << "Failed to delete chunk file: " << chunkFile << std::endl;
+            return false;
+        }
+    }
+
     return true;
 }
