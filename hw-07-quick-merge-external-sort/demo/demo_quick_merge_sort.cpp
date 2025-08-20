@@ -38,7 +38,7 @@ int main()
     printRecords(data, std::cout);
     std::cout << "==================================\n";
 
-    // Генерируем точно такой же массив.
+    // Генерируем точно такой же массив для чистоты сравнения
     data = gen.regenerate(N, SEED);
     std::cout << "second generate data:\n";
     printRecords(data, std::cout);
