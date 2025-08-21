@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <chrono>
 
+#define MIN_DISTRIBUTION 1
+#define MAX_DISTRIBUTION 1000000000
+
 RandomArrayGenerator::RandomArrayGenerator()
 {
     // по умолчанию сидим по времени
@@ -20,7 +23,7 @@ std::vector<Record> RandomArrayGenerator::generate(size_t size)
     std::vector<Record> result;
     result.reserve(size);
 
-    std::uniform_int_distribution<int> dist(1, 100);
+    std::uniform_int_distribution<int> dist(MIN_DISTRIBUTION, MAX_DISTRIBUTION);
     for (size_t i = 0; i < size; ++i)
     {
         int randomKey = dist(rng_);

@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+// test folder for real file system
+#define ROOT_DIR "/tmp/test-external-sort"
+
 /**
  * @brief Конкретная реализация FileService для работы с файловой системой.
  * Используется стандартная библиотека std::fstream и std::filesystem.
@@ -17,7 +20,13 @@ private:
     const std::string getRealPath(const std::string &path) const;
 
 public:
-    FileSystemService(const std::string &root = "/tmp"): rootDir(root) {};
+    // Создаем папку (со всей иерархией) для работы конкретного сервиса.
+    // Разные объекты-сервисы работают в своих подпапках: удобно для распараллеливания.
+    explicit FileSystemService(const std::string &root = ROOT_DIR);
+    
+    // деструктор - удаляет папку, в которой работал сервис файловой системы
+    virtual ~FileSystemService();
+    
     // для внешнего обращения - относительный путь, 
     // внутри сервис работает с реальным путем,
     // учитывая rootDir

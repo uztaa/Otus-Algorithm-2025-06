@@ -21,21 +21,15 @@ protected:
         outputFile = "test_output.txt";
 
         FileGenerator fg(fs);
-        size_t N = 100;
-        T = 10;
+        N = 1000; // number of rows
+        T = 100; // max value
         seed = 12345;
-
         ASSERT_TRUE(fg.generateFile(inputFile, N, T, seed));
     }
 
     void TearDown() override {
         // Cleanup files
-        fs->deleteFile(inputFile);
-        fs->deleteFile(outputFile);
-        for (int i = 0; i < T; ++i) {
-            std::string chunkFile = "chunk_" + std::to_string(i) + ".txt";
-            fs->deleteFile(chunkFile);
-        }
+        // fs сам должен чисить всю свою папку в деструкторе
     }
 
     std::shared_ptr<FileService> fs;
@@ -43,13 +37,14 @@ protected:
     std::unique_ptr<ExternalSortES1> externalSorter;
     std::string inputFile;
     std::string outputFile;
-    int T;
+    int T;  // max value
     uint32_t seed;
+    size_t N; // number_of_rows
 };
 
 
 TEST_F(ExternalSortES1Test, ExternalSort_SortsCorrectly) {
-    bool res = externalSorter->externalSort(inputFile, outputFile, T);
+    bool res = externalSorter->externalSort(inputFile, outputFile, N/100, T);
     ASSERT_TRUE(res);
 
     std::vector<int> sortedKeys;
@@ -64,14 +59,14 @@ TEST_F(ExternalSortES1Test, ExternalSort_SortsCorrectly) {
 }
 
 TEST_F(ExternalSortES1Test, ExternalSort_InvalidT_Fails) {
-    bool res = externalSorter->externalSort(inputFile, outputFile, 0);
+    bool res = externalSorter->externalSort(inputFile, outputFile, 0, 100);
     ASSERT_FALSE(res);
 
-    res = externalSorter->externalSort(inputFile, outputFile, -1);
+    res = externalSorter->externalSort(inputFile, outputFile, -1, 100);
     ASSERT_FALSE(res);
 }
 
 TEST_F(ExternalSortES1Test, ExternalSort_NonExistentInput_Fails) {
-    bool res = externalSorter->externalSort("none_existing_file.txt", outputFile, T);
+    bool res = externalSorter->externalSort("none_existing_file.txt", outputFile, N/100, T);
     ASSERT_FALSE(res);
 }

@@ -24,7 +24,7 @@ TEST(FileGeneratorTest, GeneratesCorrectFileInMemory)
     std::vector<int> contents;
     ASSERT_TRUE(memFs->readLines(testFile, contents));
 
-    std::vector<int> expected = {10, 12, 14, 13, 8};
+    std::vector<int> expected = {3, 12, 14, 5, 5}; // зависит от MIN_DISTRIBUTION, MAX_DISTRIBUTION
     ASSERT_EQ(expected, contents);
 
     ASSERT_TRUE(memFs->deleteFile(testFile));

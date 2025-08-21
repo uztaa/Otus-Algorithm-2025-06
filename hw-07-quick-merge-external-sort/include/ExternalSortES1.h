@@ -17,7 +17,7 @@ public:
     ExternalSortES1(std::shared_ptr<FileService> fileService, std::shared_ptr<Sortable> inMemSorter)
         : fs_(std::move(fileService)), inMemSorter_(std::move(inMemSorter)) {}
 
-    bool externalSort(const std::string &inputFile, const std::string &outputFile, int T) override;
+    bool externalSort(const std::string& inputFile, const std::string& outputFile, int number_of_chunks, int maxValue) override;
 
 private:
     std::shared_ptr<FileService> fs_;

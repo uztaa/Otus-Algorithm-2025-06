@@ -1,17 +1,9 @@
-// FileSystemServiceTests.cpp
 #include <gtest/gtest.h>
 #include "FileSystemService.h"
 #include <fstream>
 #include <filesystem>
 #include "FileGenerator.h"
-#include "InMemoryFileService.h"
 
-// удалить данные или вывести в лог информацию об ошибке
-void tryDeleteOrLog(const std::shared_ptr<FileService>& fs, const std::string& path) {
-     if( !fs->deleteFile(path) ) {
-            std::cerr << "not deleted " << path << std::endl;
-        }
-}
 
 TEST(FileSystemServiceTest, CreateWriteReadDeleteFile)
 {
@@ -56,11 +48,11 @@ TEST(FileSystemServiceTest, SplitAndMergeChunks) {
     std::string outputFile = "split_merge_test_output.txt";
 
     int chunck_size = 3;
-    int maxKey = 15;
+    int maxKey = 100;
     int rows = 5;
     uint32_t seed = 123;
 
-    auto realFs = std::make_shared<FileSystemService>(); // <=  InMemoryFileService
+    auto realFs = std::make_shared<FileSystemService>();
     FileGenerator gen(realFs);
      
     bool created = gen.generateFile(inputFile, rows, maxKey, seed);
@@ -86,7 +78,4 @@ TEST(FileSystemServiceTest, SplitAndMergeChunks) {
     std::vector<int> mergedData;
     ASSERT_TRUE(realFs->readLines(outputFile, mergedData));
     ASSERT_EQ(mergedData.size(), rows);
-
-    tryDeleteOrLog(realFs, inputFile);
-    tryDeleteOrLog(realFs, outputFile);
 }

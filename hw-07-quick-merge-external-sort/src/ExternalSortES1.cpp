@@ -7,26 +7,29 @@
 #include <string>
 #include <iostream>
 
-bool ExternalSortES1::externalSort(const std::string &inputFile, const std::string &outputFile, int T) {
-    if (T <= 0) {
-        std::cerr << "Parameter T must be positive\n";
+bool ExternalSortES1::externalSort(const std::string& inputFile, const std::string& outputFile, int number_of_chunks, int maxValue)
+{
+    if (number_of_chunks <= 0)
+    {
+        std::cerr << "Parameter number_of_chunks must be positive\n";
         return false;
     }
-
-    int maxKey = T; // or determine max key appropriately
 
     std::vector<std::string> chunkFiles;
 
     // Разбиваем файл на T чанков по ключам
-    if (!fs_->splitFileToChunks(inputFile, T, maxKey, chunkFiles)) {
+    if (!fs_->splitFileToChunks(inputFile, number_of_chunks, maxValue, chunkFiles))
+    {
         std::cerr << "splitFileToChunks failed\n";
         return false;
     }
 
     // Сортируем каждый chunk внутренним сортировщиком
-    for (const auto &chunkFile : chunkFiles) {
+    for (const auto &chunkFile : chunkFiles)
+    {
         std::vector<int> chunkData;
-        if (!fs_->readLines(chunkFile, chunkData)) {
+        if (!fs_->readLines(chunkFile, chunkData))
+        {
             std::cerr << "Failed to read chunk file: " << chunkFile << "\n";
             return false;
         }
@@ -43,19 +46,20 @@ bool ExternalSortES1::externalSort(const std::string &inputFile, const std::stri
         for (const auto &r : records)
             chunkData.push_back(r.getKey());
 
-        if (!fs_->writeLines(chunkFile, chunkData)) {
+        if (!fs_->writeLines(chunkFile, chunkData))
+        {
             std::cerr << "Failed to write sorted chunk file: " << chunkFile << "\n";
             return false;
         }
     }
 
     // Объединяем отсортированные чанки в результирующий файл (реализовано в FileService)
-    bool mergeRes = fs_->mergeChunks(chunkFiles, outputFile);
+    bool mergeResult = fs_->mergeChunks(chunkFiles, outputFile);
 
-    // Удаляем временные файлы чанков
-    for (const auto &chunkFile : chunkFiles) {
-        fs_->deleteFile(chunkFile);
+    if (!mergeResult)
+    {
+        std::cerr << "Merged chunks error " << "\n";
     }
 
-    return mergeRes;
+    return mergeResult;
 }
