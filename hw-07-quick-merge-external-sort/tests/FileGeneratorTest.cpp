@@ -11,8 +11,8 @@ TEST(FileGeneratorTest, GeneratesCorrectFileInMemory)
 
     std::string testFile = "FileGeneratorTest.txt";
     size_t rows = 5;
-    int maxValue = 15;
-    uint32_t seed = 123;
+    int maxValue = 49;
+    uint32_t seed = 12345L;
 
     // Act
     bool created = gen.generateFile(testFile, rows, maxValue, seed);
@@ -24,7 +24,7 @@ TEST(FileGeneratorTest, GeneratesCorrectFileInMemory)
     std::vector<int> contents;
     ASSERT_TRUE(memFs->readLines(testFile, contents));
 
-    std::vector<int> expected = {3, 12, 14, 5, 5}; // зависит от MIN_DISTRIBUTION, MAX_DISTRIBUTION
+    std::vector<int> expected = { 46, 44, 16, 7, 10 }; // зависит от seed, min_dist, max_dist в RandomArrayGenerator
     ASSERT_EQ(expected, contents);
 
     ASSERT_TRUE(memFs->deleteFile(testFile));

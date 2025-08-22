@@ -3,10 +3,10 @@
 
 // Проверка, что generate(N) каждый раз создает разные массивы
 TEST(RandomArrayGeneratorTest, GenerateProducesDifferentArrays) {
-    RandomArrayGenerator generator;
+    RandomArrayGenerator generator(12345L);
 
-    auto arr1 = generator.generate(100);
-    auto arr2 = generator.generate(100);
+    auto arr1 = generator.generate(1000);
+    auto arr2 = generator.generate(1000);
 
     // Размеры должны совпадать
     ASSERT_EQ(arr1.size(), arr2.size());
@@ -28,7 +28,7 @@ TEST(RandomArrayGeneratorTest, GenerateProducesDifferentArrays) {
 TEST(RandomArrayGeneratorTest, RegenerateProducesSameArrayWithSameSeed) {
     RandomArrayGenerator generator;
 
-    uint32_t seed = 12345;
+    uint32_t seed = 12345L;
     size_t size = 100;
 
     auto arr1 = generator.regenerate(size, seed);
