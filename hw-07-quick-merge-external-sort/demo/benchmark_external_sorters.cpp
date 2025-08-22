@@ -12,6 +12,7 @@
 #include "ExternalSortES2.h"
 #include "ExternalSortES3.h"
 #include "QuickSorter.h"
+#include "TimeFormatter.h"
 
 static const std::vector<size_t> NS = {100, 1000, 10'000, 100'000, 1'000'000};
 static const uint32_t SEED = 12345u;
@@ -112,60 +113,6 @@ BenchmarkResult runSingleBenchmark(size_t N, size_t T, const std::string &sorter
     return BenchmarkResult{N, T, sorterType, duration, ok};
 }
 
-// Функция форматирования времени
-std::string formatDuration(long long ns)
-{
-    if (ns < 0)
-        return "timeout";
-
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(1);
-
-    if (ns < NS_IN_US)
-    {
-        // наносекунды
-        return std::to_string(ns) + " ns";
-    }
-    else if (ns < NS_IN_MS)
-    {
-        // микросекунды
-        double us = ns / static_cast<double>(NS_IN_US);
-        oss << us << " µs";
-        return oss.str();
-    }
-    else if (ns < NS_IN_S)
-    {
-        // миллисекунды
-        double ms = ns / static_cast<double>(NS_IN_MS);
-        oss << ms << " ms";
-        return oss.str();
-    }
-    else if (ns < NS_IN_M)
-    {
-        // секунды
-        double s = ns / static_cast<double>(NS_IN_S);
-        oss << s << " s";
-        return oss.str();
-    }
-    else if (ns < NS_IN_H)
-    {
-        // минуты + секунды
-        long long minutes = ns / NS_IN_M;
-        double seconds = (ns % NS_IN_M) / static_cast<double>(NS_IN_S);
-        oss << minutes << " m " << seconds << " s";
-        return oss.str();
-    }
-    else
-    {
-        // часы + минуты + секунды
-        long long hours = ns / NS_IN_H;
-        long long minutes = (ns % NS_IN_H) / NS_IN_M;
-        double seconds = (ns % NS_IN_M) / static_cast<double>(NS_IN_S);
-        oss << hours << " h " << minutes << " m " << seconds << " s";
-        return oss.str();
-    }
-}
-
 // Вывод таблицы
 void printResults(const std::vector<BenchmarkResult> &results)
 {
@@ -177,13 +124,15 @@ void printResults(const std::vector<BenchmarkResult> &results)
               << "\n";
     std::cout << std::string(50, '=') << "\n";
 
+    TimeFormatter tf;
+
     for (const auto &r : results)
     {
         std::cout << std::left
                   << std::setw(10) << r.N
                   << std::setw(10) << r.T
                   << std::setw(8) << r.sorter
-                  << std::setw(14) << formatDuration(r.durationMs)
+                  << std::setw(14) << tf.formatDuration(r.durationMs)
                   << "\n";
     }
 }
