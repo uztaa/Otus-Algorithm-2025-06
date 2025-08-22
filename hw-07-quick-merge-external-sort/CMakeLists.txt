@@ -39,9 +39,13 @@ gtest_discover_tests(run_tests)
 add_executable(demo_quick_merge_sort demo/demo_quick_merge_sort.cpp)
 target_link_libraries(demo_quick_merge_sort sorters_lib)
 
-# ================= Benchmark =================
+# ================= Benchmark (JUNIOR) =================
 add_executable(benchmark_sorters demo/benchmark_sorters.cpp)
 target_link_libraries(benchmark_sorters sorters_lib)
+
+# ================= Benchmark (MIDDLE) =================
+add_executable(benchmark_external_sorters demo/benchmark_external_sorters.cpp)
+target_link_libraries(benchmark_external_sorters sorters_lib)
 
 # ================= Info =================
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")

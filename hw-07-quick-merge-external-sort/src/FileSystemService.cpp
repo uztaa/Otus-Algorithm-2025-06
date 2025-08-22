@@ -17,7 +17,7 @@ FileSystemService::FileSystemService(const std::string &root)
     std::string uuid = std::to_string(v[0].getKey());
 
     // создаем полный путь до папки, где будет работать сервис
-    rootDir = root + "/test-" + uuid;
+    rootDir = root + "/test" + uuid;
 
     std::error_code ec;
     if (!fs::exists(rootDir, ec))

@@ -5,7 +5,7 @@
 #include <vector>
 
 // test folder for real file system
-#define ROOT_DIR "/tmp/test-external-sort"
+#define ROOT_DIR "/media/anton/Acer/test" //"/tmp/test-external-sort"
 
 /**
  * @brief Конкретная реализация FileService для работы с файловой системой.

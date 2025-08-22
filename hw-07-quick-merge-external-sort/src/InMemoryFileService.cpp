@@ -1,5 +1,9 @@
 #include "InMemoryFileService.h"
 
+InMemoryFileService::~InMemoryFileService() {
+    files_.clear();
+}
+
 bool InMemoryFileService::createFile(const std::string& path) {
     std::lock_guard<std::mutex> lock(mtx_);
     files_[path] = {}; // Очищаем или создаем пустой файл в памяти

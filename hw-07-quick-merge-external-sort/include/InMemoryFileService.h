@@ -16,6 +16,7 @@ class InMemoryFileService : public FileService
 {
 public:
     InMemoryFileService() = default;
+    virtual ~InMemoryFileService();
 
     bool createFile(const std::string &path) override;
     bool writeLines(const std::string &path, const std::vector<int> &lines) override;
