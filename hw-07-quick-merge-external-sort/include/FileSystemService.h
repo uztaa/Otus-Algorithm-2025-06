@@ -3,9 +3,7 @@
 #include "FileService.h"
 #include <string>
 #include <vector>
-
-// test folder for real file system
-#define ROOT_DIR "/media/anton/Acer/test" //"/tmp/test-external-sort"
+#include "FileSystemSettings.h"
 
 /**
  * @brief Конкретная реализация FileService для работы с файловой системой.
