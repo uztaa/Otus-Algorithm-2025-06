@@ -47,6 +47,10 @@ target_link_libraries(benchmark_sorters sorters_lib)
 add_executable(benchmark_external_sorters demo/benchmark_external_sorters.cpp)
 target_link_libraries(benchmark_external_sorters sorters_lib)
 
+# ================= Benchmark (SENIOR) =================
+add_executable(benchmark_sorters_extended demo/benchmark_sorters_extended.cpp)
+target_link_libraries(benchmark_sorters_extended sorters_lib)
+
 # ================= Info =================
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")

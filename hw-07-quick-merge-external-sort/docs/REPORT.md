@@ -17,7 +17,7 @@
 
 ## Результаты бенчмарка Junior
 
-demo/denchmark_sorters.cpp
+demo/benchmark_sorters.cpp
 
 Если выставить таймаут 2 минуты как в тебованиях, то бенчмарк останавливается на 1 млн записей.
 
@@ -41,7 +41,7 @@ demo/denchmark_sorters.cpp
 
  ## Результаты бенчмарка Middle
 
-demo/denchmark_external_sorters.cpp
+demo/benchmark_external_sorters.cpp
 
  Таймаут выставил 30 минут.
 
@@ -79,5 +79,7 @@ demo/denchmark_external_sorters.cpp
 1000000   1000000   ES3     1.9 s 
 
 ## Результаты бенчмарка Senior
+
+demo/benchmark_sorters_extended.cpp
 
 TODO ...

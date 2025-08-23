@@ -10,7 +10,7 @@ static const int64_t NS_IN_H = 60 * NS_IN_M;  // час
 std::string TimeFormatter::formatDuration(int64_t ns) const
 {
     if (ns < 0)
-        return "timeout";
+        return "timeout (" + formatDuration( (-1) * ns) + ")";
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(1);

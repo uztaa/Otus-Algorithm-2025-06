@@ -16,7 +16,7 @@ TEST_F(BenchmarkDataGeneratorTest, Digits_GeneratesDigitsOnly) {
     auto data = gen.digits(1000);
     ASSERT_EQ(data.size(), 1000);
     for (auto& r : data) {
-        EXPECT_GE(r.getKey(), 0);
+        EXPECT_GE(r.getKey(), 0); // проверяем, что весь массив - цифры
         EXPECT_LE(r.getKey(), 9);
     }
 }
