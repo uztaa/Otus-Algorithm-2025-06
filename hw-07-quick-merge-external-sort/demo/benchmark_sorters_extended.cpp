@@ -13,62 +13,44 @@
 #include "MergeSorter.h"
 #include "BenchmarkDataGenerator.h"
 #include "TimeFormatter.h"
-#include "AsyncRunner.h"
 #include "TimeSettings.h"
+#include "Timer.h"
+
+#include "SorterFactory.h"
 
 constexpr uint32_t SEED = 12345u;
-constexpr int64_t TIMEOUT_NS = 10 * NS_IN_S; // таймаут на выполнение одной сортировки
+constexpr int64_t TIMEOUT_NS = 3 * NS_IN_M; // таймаут на выполнение одной сортировки
 
 const std::vector<size_t> SIZES = {1, 10, 100, 1'000, 10'000, 100'000}; //, 1'000'000};
 const std::vector<std::string> DATA_TYPES = {"random", "digits", "sorted", "revers"};
+const std::vector<std::string> SORTERS = SorterFactory::getAvailableSorters();
+
+// конвертер наносекунд в читабельную строку
+TimeFormatter tf;
 
 // Функция генерации данных единым способом с использованием BenchmarkDataGenerator и seed
 std::vector<Record> generateDataByType(BenchmarkDataGenerator &gen, size_t size, const std::string &dataType)
 {
+    std::vector<Record> data;
     if (dataType == "random")
     {
-        return gen.random(size);
+        data = gen.random(size);
     }
     else if (dataType == "digits")
     {
-        return gen.digits(size);
+        data = gen.digits(size);
     }
     else if (dataType == "sorted")
     {
         // 1% dirties по условию задачи
         size_t dirties = static_cast<size_t>(size * 0.01);
-        return gen.sorted(size, dirties);
+        data = gen.sorted(size, dirties);
     }
     else if (dataType == "revers")
     {
-        return gen.revers(size);
+        data = gen.revers(size);
     }
-    else
-    {
-        return {};
-    }
-}
-
-template <typename Sorter>
-std::pair<bool, long> trySort(BenchmarkDataGenerator &gen, Sorter &sorter, size_t size, const std::string &dataType, int64_t /*timeout_ns*/)
-{
-    std::vector<Record> data = generateDataByType(gen, size, dataType);
-
-    auto start = std::chrono::steady_clock::now();
-    sorter.sort(data);
-    auto end = std::chrono::steady_clock::now();
-    long duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-    // Проверяем что отсортировано по ключу
-    for (size_t i = 1; i < data.size(); ++i)
-    {
-        if (data[i - 1].getKey() > data[i].getKey())
-        {
-            return {false, duration_ns};
-        }
-    }
-
-    return {true, duration_ns};
+    return data;
 }
 
 // Структура для идентификации запроса
@@ -93,7 +75,7 @@ struct BenchmarkResult
     int64_t durationNs;
 };
 
-void printHeaders()
+void printResults(const std::vector<BenchmarkResult> &results)
 {
     std::cout << std::left
               << std::setw(12) << "Size"
@@ -103,11 +85,6 @@ void printHeaders()
               << std::setw(8) << "Success"
               << "\n";
     std::cout << std::string(62, '=') << "\n";
-}
-
-void printResults(const std::vector<BenchmarkResult> &results)
-{
-    TimeFormatter tf;
 
     for (const auto &r : results)
     {
@@ -121,68 +98,84 @@ void printResults(const std::vector<BenchmarkResult> &results)
     }
 }
 
-
-int main()
+// создаем запросы на формирование бенчмарка
+std::vector<BenchmarkRequest> createBenchmarkRequests()
 {
-    BenchmarkDataGenerator gen;
-    AsyncRunner runner;
-
-    std::map<BenchmarkRequest, std::future<void>> futures;
-
-    std::mutex resultsMutex; // для добавления результатов из разных потоков
-    std::vector<BenchmarkResult> allResults;
-
+    std::vector<BenchmarkRequest> requests;
     for (auto size : SIZES)
     {
         for (const auto &dataType : DATA_TYPES)
         {
-            // QuickSorter
+            for (const auto &sorterName : SORTERS)
             {
-                BenchmarkRequest req{size, dataType, "QuickSort"};
-                futures[req] = std::async(std::launch::async, [&, req]()
-                                          {
-                                              QuickSorter sorter;
-                                              auto task = [&gen, &sorter, req]()
-                                              {
-                                                  return trySort(gen, sorter, req.size, req.dataType, TIMEOUT_NS).first;
-                                              };
-
-                                              auto [success, duration] = runner.asyncRunWithTimeout(task, TIMEOUT_NS);
-                                              BenchmarkResult res{req.size, req.dataType, req.sorterName, success, duration};
-                                              std::lock_guard<std::mutex> lock(resultsMutex);
-                                              allResults.push_back(res);
-                                          });
-            }
-
-            // MergeSorter
-            {
-                BenchmarkRequest req{size, dataType, "MergeSorter"};
-                futures[req] = std::async(std::launch::async, [&, req]()
-                                          {
-                    MergeSorter sorter;
-                    auto task = [&gen, &sorter, req]() {
-                        return trySort(gen, sorter, req.size, req.dataType, TIMEOUT_NS).first;
-                    };
-                        auto [success, duration] = runner.asyncRunWithTimeout(task, TIMEOUT_NS);
-                        BenchmarkResult res{req.size, req.dataType, req.sorterName, success, duration};
-                        std::lock_guard<std::mutex> lock(resultsMutex);
-                        allResults.push_back(res);
-                     });
+                BenchmarkRequest req{size, dataType, sorterName};
+                requests.push_back(req);
             }
         }
     }
+
+    return requests;
+}
+
+int main()
+{
+    std::cout << "benchmark started" << std::endl;
+    Timer benchmarkTimer;
+    benchmarkTimer.start();
+
+    BenchmarkDataGenerator gen;
+
+    std::vector<BenchmarkRequest> requests = createBenchmarkRequests();
+
+    std::mutex resultsMutex; // mutex для добавления результатов из разных потоков
+    std::vector<BenchmarkResult> allResults;
+
+    std::map<BenchmarkRequest, std::future<void>> futures;
+    for (auto req : requests)
+    {
+        futures[req] = std::async(std::launch::async, [&, req]()
+                                  {
+                                        std::unique_ptr<Sortable> sorter = SorterFactory::createSorter(req.sorterName);
+                                        std::vector<Record> data = generateDataByType(gen, req.size, req.dataType);
+
+                                              Timer timer;
+                                              timer.start();
+                                              sorter->sort(data);
+                                              timer.stop();
+
+                                              BenchmarkResult res{req.size, req.dataType, req.sorterName, true, timer.getDurationNs()};
+                                              std::lock_guard<std::mutex> lock(resultsMutex);
+                                              allResults.push_back(res); 
+                                            });
+    }
+
+
+    /**
+     * Время ожидания (нс) future.
+     * Изначально совпадает с TIMEOUT_NS.
+     * На каждом извлечении future уменьшается на время выполнения конкретного future.
+    */ 
+    int64_t wait_time = TIMEOUT_NS;
 
     // Ждем завершения всех задач
     for (auto &[req, fut] : futures)
     {
         try
         {
-            if (fut.wait_for(std::chrono::nanoseconds(TIMEOUT_NS)) == std::future_status::timeout)
+            std::cout << "wait_time=" << tf.formatDuration(wait_time) << std::endl;
+            if (fut.wait_for(std::chrono::nanoseconds(wait_time)) == std::future_status::timeout)
             {
                 // выбрасываем исключение, чтобы прервать дальнейшую работу
                 throw std::runtime_error("Timeout");
-            }
+            }            
             fut.get();
+
+            // делаем пересчте ожидания следующего future
+            std::lock_guard<std::mutex> lock(resultsMutex);
+            for(auto &r: allResults) {
+                wait_time -= r.durationNs;
+            if (wait_time <= 0) wait_time = 100; // Если уходим в минус, то присваиваем мальнькое значение 100 нс.
+            }  
         }
         catch (const std::exception &e)
         {
@@ -192,7 +185,10 @@ int main()
         }
     }
 
-    printHeaders();
+    benchmarkTimer.stop();
+    std::cout << "benchmark finished at " 
+        << tf.formatDuration(benchmarkTimer.getDurationNs()) << std::endl;
+
     printResults(allResults);
 
     return 0;
