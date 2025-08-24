@@ -14,7 +14,7 @@ class ExternalSortES2Test : public ::testing::Test {
 protected:
     void SetUp() override {
         // Используем FileSystemService, можно поменять на InMemoryFileService для тестов без файловой системы
-        fs = std::make_shared<FileSystemService>();
+        fs = std::make_shared<InMemoryFileService>();
         sorter = std::make_shared<QuickSorter>();
         externalSorter = std::make_unique<ExternalSortES2>(fs, sorter);
 

@@ -13,7 +13,7 @@
 class ExternalSortES3Test : public ::testing::Test {
 protected:
     void SetUp() override {
-        fs = std::make_shared<FileSystemService>();
+        fs = std::make_shared<InMemoryFileService>();
         sorter = std::make_shared<QuickSorter>();
         externalSorter = std::make_unique<ExternalSortES3>(fs, sorter);
 

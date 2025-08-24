@@ -12,7 +12,11 @@ FileSystemService::FileSystemService(const std::string &root)
     namespace fs = std::filesystem;
 
     // генерируем подпапку (примитивный UUID)
-    RandomArrayGenerator rg;
+    auto seed = static_cast<uint32_t>(
+        std::chrono::steady_clock::now().time_since_epoch().count()
+    );
+    RandomArrayGenerator rg{seed};
+
     auto v = rg.generate(1);
     std::string uuid = std::to_string(v[0].getKey());
 
