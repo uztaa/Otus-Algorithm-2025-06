@@ -1,23 +1,28 @@
 # Отчет о выполненной работе 
 
-Реализованы алгоритмы быстрой сортировки и сортировки слиянием.
-Написаны unit-тесты.
+Реализованы алгоритмы быстрой сортировки, сортировки слиянием, реализованы ES1, ES2, ES3 алгоритмы внешней сортировки.
+Написаны unit-тесты на все сортировщики, написаны все бенчмарки.
+Реализовано много вспомогательных классов.
 
 ## Важно!
-Пусть к тестовой папке ROOT_DIR, где будут создаваться/удаляться файлы задается в include/FileSystemSetting.h
+Пусть к тестовой папке ROOT_DIR, где будут создаваться/удаляться файлы задается в 
+```cpp
+include/FileSystemSetting.h
+```
 
 ## Улучшения
 Реализован "честный" бенчмарк: каждый сортировщик работает с одним и тем же случайным массивом данных (метод RandomArrayGenerator::regenerate).
 
 Изменен интерфес сортировщика, теперь метод sort() возвращает void.
 А все необходимые события реализуются за счет слушателей.
-Например, для подсчета времени сортировки используется DurationSortListener.
+Например, для подсчета времени сортировки используется DurationSortListener, для логирования LoggingSortListener.
 
-В прошлых ДЗ не переделывал интерефес сортировщика пока что.
+В прошлых ДЗ не переделывал сортировщики на новый интерфейс.
 
 ## Результаты бенчмарка Junior
-
+```cpp
 demo/benchmark_sorters.cpp
+```
 
 Если выставить таймаут 2 минуты как в тебованиях, то бенчмарк останавливается на 1 млн записей.
 
@@ -40,8 +45,9 @@ demo/benchmark_sorters.cpp
    1000000         518551           5449
 
  ## Результаты бенчмарка Middle
-
+```cpp
 demo/benchmark_external_sorters.cpp
+```
 
  Таймаут выставил 30 минут.
 
@@ -79,7 +85,57 @@ demo/benchmark_external_sorters.cpp
 1000000   1000000   ES3     1.9 s 
 
 ## Результаты бенчмарка Senior
-
+```cpp
 demo/benchmark_sorters_extended.cpp
+```
 
-TODO ...
+ Size        Type      Sorter      Duration            Success 
+==============================================================
+1           random    QuickSort   525.7 µs           yes     
+1           random    MergeSorter 471.0 µs           yes     
+1           digits    QuickSort   400.6 µs           yes     
+1           digits    MergeSorter 253.9 µs           yes     
+1           sorted    QuickSort   144.4 µs           yes     
+1           sorted    MergeSorter 146.5 µs           yes     
+1           revers    QuickSort   154.9 µs           yes     
+1           revers    MergeSorter 182.6 µs           yes     
+10          random    QuickSort   207.3 µs           yes     
+10          random    MergeSorter 284.0 µs           yes     
+10          digits    QuickSort   221.2 µs           yes     
+10          digits    MergeSorter 209.2 µs           yes     
+10          sorted    QuickSort   206.9 µs           yes     
+10          sorted    MergeSorter 211.6 µs           yes     
+10          revers    QuickSort   224.1 µs           yes     
+10          revers    MergeSorter 202.4 µs           yes     
+100         random    QuickSort   223.5 µs           yes     
+100         random    MergeSorter 348.8 µs           yes     
+100         digits    QuickSort   261.4 µs           yes     
+100         digits    MergeSorter 393.1 µs           yes     
+100         sorted    QuickSort   359.1 µs           yes     
+100         sorted    MergeSorter 308.7 µs           yes     
+100         revers    QuickSort   345.4 µs           yes     
+100         revers    MergeSorter 331.8 µs           yes     
+1000        random    QuickSort   1.2 ms              yes     
+1000        random    MergeSorter 3.1 ms              yes     
+1000        sorted    MergeSorter 3.5 ms              yes     
+1000        revers    MergeSorter 3.1 ms              yes     
+1000        digits    QuickSort   6.8 ms              yes     
+1000        digits    MergeSorter 6.8 ms              yes     
+1000        sorted    QuickSort   24.8 ms             yes     
+10000       random    QuickSort   29.8 ms             yes     
+10000       revers    MergeSorter 47.8 ms             yes     
+10000       digits    MergeSorter 56.3 ms             yes     
+1000        revers    QuickSort   57.4 ms             yes     
+10000       sorted    MergeSorter 55.2 ms             yes     
+10000       random    MergeSorter 57.9 ms             yes     
+10000       digits    QuickSort   213.5 ms            yes     
+100000      random    QuickSort   232.4 ms            yes     
+100000      revers    MergeSorter 286.2 ms            yes     
+100000      digits    MergeSorter 376.6 ms            yes     
+100000      random    MergeSorter 439.9 ms            yes     
+10000       sorted    QuickSort   1.1 s               yes     
+10000       revers    QuickSort   1.7 s               yes     
+100000      digits    QuickSort   timeout             no      
+100000      revers    QuickSort   timeout             no      
+100000      sorted    MergeSorter timeout             no      
+100000      sorted    QuickSort   timeout             no 

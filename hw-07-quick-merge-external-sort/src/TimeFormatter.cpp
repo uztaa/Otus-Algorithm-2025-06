@@ -1,16 +1,11 @@
 #include "TimeFormatter.h"
 #include <iomanip>
-
-static int64_t NS_IN_US = 1000;               // микросекунда в нс
-static const int64_t NS_IN_MS = 1'000'000;    // милисекунда
-static const int64_t NS_IN_S = 1'000'000'000; // секунда
-static const int64_t NS_IN_M = 60 * NS_IN_S;  // минута
-static const int64_t NS_IN_H = 60 * NS_IN_M;  // час
+#include "TimeSettings.h"
 
 std::string TimeFormatter::formatDuration(int64_t ns) const
 {
     if (ns < 0)
-        return "timeout (" + formatDuration( (-1) * ns) + ")";
+        return "timeout";
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(1);
