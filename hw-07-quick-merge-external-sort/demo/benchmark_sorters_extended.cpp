@@ -9,6 +9,9 @@
 #include <map>
 #include <mutex>
 
+#include <fstream>
+#include <filesystem>
+
 #include "QuickSorter.h"
 #include "MergeSorter.h"
 #include "BenchmarkDataGenerator.h"
@@ -18,8 +21,15 @@
 
 #include "SorterFactory.h"
 
+// seed для воспроизводимости бенчмарка и равных условиях для всех сортировщиков
 constexpr uint32_t SEED = 12345u;
-constexpr int64_t TIMEOUT_NS = 1 * NS_IN_M; // таймаут на выполнение одной сортировки
+
+// таймаут на выполнение одной сортировки
+// временем на создание данных и сохранением в файл можно принебречь
+constexpr int64_t TIMEOUT_NS = 1 * NS_IN_M; 
+
+// путь, куда будут сохраняться файлы
+const std::string PATH_TO_SAVE_FILES = "/media/anton/Acer/test";
 
 const std::vector<size_t> SIZES = {1, 10, 100, 1'000, 10'000, 100'000}; //, 1'000'000};
 const std::vector<std::string> DATA_TYPES = {"random", "digits", "sorted", "revers"};
@@ -117,6 +127,38 @@ std::vector<BenchmarkRequest> createBenchmarkRequests()
     return requests;
 }
 
+// сохраняет отсортированные данные в файл
+void saveSortedDataToFile(const std::vector<Record> &data, const BenchmarkRequest &req)
+{
+    namespace fs = std::filesystem;
+
+    // Формируем имя файла
+    std::string filename = std::to_string(req.size) + "_" + req.dataType + "_" + req.sorterName + ".txt";
+    fs::path filepath = fs::path(PATH_TO_SAVE_FILES) / filename;
+
+    // Создаем директорию, если ее нет
+    fs::create_directories(filepath.parent_path());
+
+    std::ofstream ofs(filepath);
+    if (!ofs.is_open())
+    {
+        throw std::runtime_error("Failed to open file for writing: " + filepath.string());
+    }
+
+    // Первая строка - размер массива
+    ofs << data.size() << "\n";
+
+    // Вторая строка - ключи через пробел
+    for (size_t i = 0; i < data.size(); ++i)
+    {
+        ofs << data[i].getKey();
+        if (i + 1 < data.size())
+            ofs << " ";
+    }
+    ofs << "\n";
+}
+
+
 int main()
 {
     std::cout << "benchmark started" << std::endl;
@@ -145,7 +187,15 @@ int main()
 
                                               BenchmarkResult res{req.size, req.dataType, req.sorterName, true, timer.getDurationNs()};
                                               std::lock_guard<std::mutex> lock(resultsMutex);
-                                              allResults.push_back(res); 
+                                              allResults.push_back(res);
+
+                                            
+                                             // сохранение файлов
+                                             timer.start();
+                                             saveSortedDataToFile(data, req);
+                                             timer.stop();
+                                             std::cout << "save file duration=" << tf.formatDuration(timer.getDurationNs()) << std::endl;
+
                                             });
     }
 
@@ -162,7 +212,7 @@ int main()
     {
         try
         {
-            //std::cout << "wait_time=" << tf.formatDuration(wait_time) << std::endl;
+            std::cout << "wait_time=" << tf.formatDuration(wait_time) << std::endl;
             if (fut.wait_for(std::chrono::nanoseconds(wait_time)) == std::future_status::timeout)
             {
                 // выбрасываем исключение, чтобы прервать дальнейшую работу
