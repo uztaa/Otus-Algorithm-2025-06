@@ -6,6 +6,7 @@
 
 #include "QuickSorter.h"
 #include "MergeSorter.h"
+#include "BinaryInsertionSorter.h"
 
 /*
 #include "sort/BubbleSorter.cpp"
@@ -25,13 +26,14 @@ public:
     static std::vector<std::string> getAvailableSorters() {
         return {
             "QuickSorter",
-            "MergeSorter"
+            "MergeSorter",
+            "BinaryInsertionSorter",
             /*
             "BubbleSorter",
             "InsertionSorter",
             "CocktailSorter",
             "InsertionShiftSorter",
-            "BinaryInsertionSorter",
+            
             "ShellSorter.Classic",
             "ShellSorter.Hibbard",
             "ShellSorter.Sedgewick"
@@ -42,6 +44,7 @@ public:
     static std::unique_ptr<Sortable> createSorter(const std::string& name) {
         if (name == "QuickSorter") return std::make_unique<QuickSorter>();
         if (name == "MergeSorter") return std::make_unique<MergeSorter>();
+        if (name == "BinaryInsertionSorter") return std::make_unique<BinaryInsertionSorter>();
 
         /*
         if (name == "BubbleSorter") return std::make_unique<BubbleSorter>();

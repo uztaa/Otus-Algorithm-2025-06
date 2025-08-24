@@ -19,7 +19,7 @@
 #include "SorterFactory.h"
 
 constexpr uint32_t SEED = 12345u;
-constexpr int64_t TIMEOUT_NS = 3 * NS_IN_M; // таймаут на выполнение одной сортировки
+constexpr int64_t TIMEOUT_NS = 1 * NS_IN_M; // таймаут на выполнение одной сортировки
 
 const std::vector<size_t> SIZES = {1, 10, 100, 1'000, 10'000, 100'000}; //, 1'000'000};
 const std::vector<std::string> DATA_TYPES = {"random", "digits", "sorted", "revers"};
@@ -80,20 +80,20 @@ void printResults(const std::vector<BenchmarkResult> &results)
     std::cout << std::left
               << std::setw(12) << "Size"
               << std::setw(10) << "Type"
-              << std::setw(12) << "Sorter"
+              << std::setw(32) << "Sorter"
               << std::setw(20) << "Duration"
-              << std::setw(8) << "Success"
+              << std::setw(10) << "Success"
               << "\n";
-    std::cout << std::string(62, '=') << "\n";
+    std::cout << std::string(84, '=') << "\n";
 
     for (const auto &r : results)
     {
         std::cout << std::left
                   << std::setw(12) << r.size
                   << std::setw(10) << r.dataType
-                  << std::setw(12) << r.sorterName
+                  << std::setw(32) << r.sorterName
                   << std::setw(20) << tf.formatDuration(r.durationNs)
-                  << std::setw(8) << (r.success ? "yes" : "no")
+                  << std::setw(10) << (r.success ? "yes" : "no")
                   << "\n";
     }
 }
@@ -162,7 +162,7 @@ int main()
     {
         try
         {
-            std::cout << "wait_time=" << tf.formatDuration(wait_time) << std::endl;
+            //std::cout << "wait_time=" << tf.formatDuration(wait_time) << std::endl;
             if (fut.wait_for(std::chrono::nanoseconds(wait_time)) == std::future_status::timeout)
             {
                 // выбрасываем исключение, чтобы прервать дальнейшую работу
