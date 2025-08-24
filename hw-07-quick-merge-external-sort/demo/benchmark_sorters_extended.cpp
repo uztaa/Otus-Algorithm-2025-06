@@ -30,6 +30,8 @@ constexpr int64_t TIMEOUT_NS = 1 * NS_IN_M;
 
 // путь, куда будут сохраняться файлы
 const std::string PATH_TO_SAVE_FILES = "/media/anton/Acer/test";
+// флаг включения сохранения отсортированных файлов
+const bool SAVE_FILE_ENABLE = false;
 
 const std::vector<size_t> SIZES = {1, 10, 100, 1'000, 10'000, 100'000}; //, 1'000'000};
 const std::vector<std::string> DATA_TYPES = {"random", "digits", "sorted", "revers"};
@@ -191,10 +193,12 @@ int main()
 
                                             
                                              // сохранение файлов
-                                             timer.start();
-                                             saveSortedDataToFile(data, req);
-                                             timer.stop();
-                                             std::cout << "save file duration=" << tf.formatDuration(timer.getDurationNs()) << std::endl;
+                                             if (SAVE_FILE_ENABLE) {
+                                                timer.start();
+                                                saveSortedDataToFile(data, req);
+                                                timer.stop();
+                                                std::cout << "save file duration=" << tf.formatDuration(timer.getDurationNs()) << std::endl;
+                                             }
 
                                             });
     }

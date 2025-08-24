@@ -88,6 +88,8 @@ demo/benchmark_external_sorters.cpp
 ```cpp
 demo/benchmark_sorters_extended.cpp
 ```
+Настройка PATH_TO_SAVE_FILES в бенчмарке отвечает за путь к сохраняемым файлам.
+Флаг включения сохранения отсортированных файлов SAVE_FILE_ENABLE (по умолчанию выключен, т.е. false).
 
  Size        Type      Sorter      Duration            Success 
 ==============================================================
