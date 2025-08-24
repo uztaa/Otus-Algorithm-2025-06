@@ -216,26 +216,20 @@ int main()
     {
         try
         {
-            std::cout << "wait_time=" << tf.formatDuration(wait_time) << std::endl;
+            // std::cout << "wait_time=" << tf.formatDuration(wait_time) << std::endl;
             if (fut.wait_for(std::chrono::nanoseconds(wait_time)) == std::future_status::timeout)
             {
                 // выбрасываем исключение, чтобы прервать дальнейшую работу
                 throw std::runtime_error("Timeout");
             }            
             fut.get();
-
-            // делаем пересчте ожидания следующего future
-            std::lock_guard<std::mutex> lock(resultsMutex);
-            for(auto &r: allResults) {
-                wait_time -= r.durationNs;
-            if (wait_time <= 0) wait_time = 100; // Если уходим в минус, то присваиваем мальнькое значение 100 нс.
-            }  
         }
         catch (const std::exception &e)
         {
             BenchmarkResult res{req.size, req.dataType, req.sorterName, false, -1};
             std::lock_guard<std::mutex> lock(resultsMutex);
             allResults.push_back(res);
+            wait_time = NS_IN_MS; // если достиг таймаут, то для остальных значение таймаута будет минимально
         }
     }
 

@@ -10,6 +10,7 @@
 #include "CocktailSorter.h"
 #include "BinaryInsertionSorter.h"
 #include "LoggingSortListener.h"
+#include "InsertionSorter.h"
 
 template <typename T>
 class SorterTest : public ::testing::Test {
@@ -31,7 +32,8 @@ using SorterTypes = ::testing::Types<
     MergeSorter,
     QuickSorter,
     BinaryInsertionSorter,
-    CocktailSorter
+    CocktailSorter,
+    InsertionSorter
 >;
 
 TYPED_TEST_SUITE(SorterTest, SorterTypes);

@@ -8,10 +8,10 @@
 #include "MergeSorter.h"
 #include "BinaryInsertionSorter.h"
 #include "CocktailSorter.h"
+#include "InsertionSorter.h"
 
 /*
 #include "sort/BubbleSorter.cpp"
-#include "sort/InsertionSorter.cpp"
 #include "sort/InsertionShiftSorter.cpp"
 #include "sort/CustomShellSorter.cpp"
 */
@@ -28,13 +28,12 @@ public:
             "MergeSorter",
             "BinaryInsertionSorter",
             "CocktailSorter",
+            "InsertionSorter",
+
 
             /*
             "BubbleSorter",
-            "InsertionSorter",
-           
             "InsertionShiftSorter",
-            
             "ShellSorter.Classic",
             "ShellSorter.Hibbard",
             "ShellSorter.Sedgewick"
@@ -47,12 +46,10 @@ public:
         if (name == "MergeSorter") return std::make_unique<MergeSorter>();
         if (name == "BinaryInsertionSorter") return std::make_unique<BinaryInsertionSorter>();
         if (name == "CocktailSorter") return std::make_unique<CocktailSorter>();
+        if (name == "InsertionSorter") return std::make_unique<InsertionSorter>();
 
-        
         /*
         if (name == "BubbleSorter") return std::make_unique<BubbleSorter>();
-        if (name == "InsertionSorter") return std::make_unique<InsertionSorter>();
-       
         if (name == "InsertionShiftSorter") return std::make_unique<InsertionShiftSorter>();
         if (name == "BinaryInsertionSorter") return std::make_unique<BinaryInsertionSorter>();
         if (name == "ShellSorter.Classic") return std::make_unique<CustomShellSorter>(CustomShellSorter::GapStrategy::Classic);
