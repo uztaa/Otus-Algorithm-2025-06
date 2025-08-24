@@ -7,6 +7,7 @@
 
 #include "QuickSorter.h"
 #include "MergeSorter.h"
+#include "CocktailSorter.h"
 #include "BinaryInsertionSorter.h"
 #include "LoggingSortListener.h"
 
@@ -21,19 +22,21 @@ public:
         std::string s(typeid(T).name());
 		sorter->setName(s.erase(0, 6));
 
-        sorter->addListener(std::make_shared<LoggingSortListener>());
+        // для дебага раскомментировать
+        //sorter->addListener(std::make_shared<LoggingSortListener>());
     }
 };
 
 using SorterTypes = ::testing::Types<
     MergeSorter,
     QuickSorter,
-    BinaryInsertionSorter
+    BinaryInsertionSorter,
+    CocktailSorter
 >;
 
 TYPED_TEST_SUITE(SorterTest, SorterTypes);
 
-TYPED_TEST(SorterTest, ProblemSortedArray) {
+TYPED_TEST(SorterTest, RandomSortedArray) {
     std::vector<Record> data = {
         {24, "a"}, {89, "b"}, {66, "c"}, {72, "d"}, {36, "e"}, {89, "f"}, {43, "g"}, {83, "h"}, {81, "i"}, {12, "j"}
     };
