@@ -24,7 +24,8 @@ constexpr uint32_t SEED = 12345u;
 
 // таймаут на выполнение одной сортировки
 // временем на генерацию данных и сохранением отсортированных массивов в файл можно принебречь
-constexpr int64_t TIMEOUT_NS = 3 * NS_IN_M;
+// настройки времени брать в TimeSettings.h
+constexpr int64_t TIMEOUT_NS = 2 * NS_IN_M;
 
 // путь, куда будут сохраняться файлы
 const std::string PATH_TO_SAVE_FILES = "/media/anton/Acer/test";
@@ -160,7 +161,7 @@ void saveSortedDataToFile(const std::vector<Record> &data, const BenchmarkReques
 
 int main()
 {
-    std::cout << "benchmark started" << std::endl;
+    std::cout << "benchmark has been started" << std::endl;
     Timer benchmarkTimer;
     benchmarkTimer.start();
 
@@ -227,7 +228,7 @@ int main()
     }
 
     benchmarkTimer.stop();
-    std::cout << "benchmark finished at "
+    std::cout << "benchmark was completed in "
               << tf.formatDuration(benchmarkTimer.getDurationNs()) << std::endl;
 
     printResults(allResults.getCopy());
