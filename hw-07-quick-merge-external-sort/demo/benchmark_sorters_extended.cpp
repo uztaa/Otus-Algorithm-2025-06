@@ -7,8 +7,6 @@
 #include <chrono>
 #include <future>
 #include <map>
-#include <mutex>
-
 #include <fstream>
 #include <filesystem>
 
@@ -18,22 +16,22 @@
 #include "TimeFormatter.h"
 #include "TimeSettings.h"
 #include "Timer.h"
-
+#include "ThreadSafeVector.h"
 #include "SorterFactory.h"
 
 // seed для воспроизводимости бенчмарка и равных условиях для всех сортировщиков
 constexpr uint32_t SEED = 12345u;
 
 // таймаут на выполнение одной сортировки
-// временем на создание данных и сохранением в файл можно принебречь
-constexpr int64_t TIMEOUT_NS = 1 * NS_IN_M; 
+// временем на генерацию данных и сохранением отсортированных массивов в файл можно принебречь
+constexpr int64_t TIMEOUT_NS = 3 * NS_IN_M;
 
 // путь, куда будут сохраняться файлы
 const std::string PATH_TO_SAVE_FILES = "/media/anton/Acer/test";
 // флаг включения сохранения отсортированных файлов
 const bool SAVE_FILE_ENABLE = false;
 
-const std::vector<size_t> SIZES = {1, 10, 100, 1'000, 10'000, 100'000}; //, 1'000'000};
+const std::vector<size_t> SIZES = {1, 10, 100, 1'000, 10'000, 100'000, 1'000'000};
 const std::vector<std::string> DATA_TYPES = {"random", "digits", "sorted", "revers"};
 const std::vector<std::string> SORTERS = SorterFactory::getAvailableSorters();
 
@@ -160,7 +158,6 @@ void saveSortedDataToFile(const std::vector<Record> &data, const BenchmarkReques
     ofs << "\n";
 }
 
-
 int main()
 {
     std::cout << "benchmark started" << std::endl;
@@ -171,44 +168,41 @@ int main()
 
     std::vector<BenchmarkRequest> requests = createBenchmarkRequests();
 
-    std::mutex resultsMutex; // mutex для добавления результатов из разных потоков
-    std::vector<BenchmarkResult> allResults;
+    // потокобезопасный контейнер для сбора результатов бенчмарка из разных потоков
+    ThreadSafeVector<BenchmarkResult> allResults;
 
     std::map<BenchmarkRequest, std::future<void>> futures;
     for (auto req : requests)
     {
         futures[req] = std::async(std::launch::async, [&, req]()
                                   {
-                                        std::unique_ptr<Sortable> sorter = SorterFactory::createSorter(req.sorterName);
-                                        std::vector<Record> data = generateDataByType(gen, req.size, req.dataType);
+                                      std::unique_ptr<Sortable> sorter = SorterFactory::createSorter(req.sorterName);
+                                      std::vector<Record> data = generateDataByType(gen, req.size, req.dataType);
 
-                                              Timer timer;
-                                              timer.start();
-                                              sorter->sort(data);
-                                              timer.stop();
+                                      Timer timer;
+                                      timer.start();
+                                      sorter->sort(data);
+                                      timer.stop();
 
-                                              BenchmarkResult res{req.size, req.dataType, req.sorterName, true, timer.getDurationNs()};
-                                              std::lock_guard<std::mutex> lock(resultsMutex);
-                                              allResults.push_back(res);
+                                      BenchmarkResult res{req.size, req.dataType, req.sorterName, true, timer.getDurationNs()};
+                                      allResults.push_back(res);
 
-                                            
-                                             // сохранение файлов
-                                             if (SAVE_FILE_ENABLE) {
-                                                timer.start();
-                                                saveSortedDataToFile(data, req);
-                                                timer.stop();
-                                                std::cout << "save file duration=" << tf.formatDuration(timer.getDurationNs()) << std::endl;
-                                             }
-
-                                            });
+                                      // сохранение файлов
+                                      if (SAVE_FILE_ENABLE)
+                                      {
+                                          timer.start();
+                                          saveSortedDataToFile(data, req);
+                                          timer.stop();
+                                          std::cout << "save file duration=" << tf.formatDuration(timer.getDurationNs()) << std::endl;
+                                      }
+                                  });
     }
-
 
     /**
      * Время ожидания (нс) future.
      * Изначально совпадает с TIMEOUT_NS.
      * На каждом извлечении future уменьшается на время выполнения конкретного future.
-    */ 
+     */
     int64_t wait_time = TIMEOUT_NS;
 
     // Ждем завершения всех задач
@@ -221,23 +215,22 @@ int main()
             {
                 // выбрасываем исключение, чтобы прервать дальнейшую работу
                 throw std::runtime_error("Timeout");
-            }            
+            }
             fut.get();
         }
         catch (const std::exception &e)
         {
             BenchmarkResult res{req.size, req.dataType, req.sorterName, false, -1};
-            std::lock_guard<std::mutex> lock(resultsMutex);
             allResults.push_back(res);
             wait_time = NS_IN_MS; // если достиг таймаут, то для остальных значение таймаута будет минимально
         }
     }
 
     benchmarkTimer.stop();
-    std::cout << "benchmark finished at " 
-        << tf.formatDuration(benchmarkTimer.getDurationNs()) << std::endl;
+    std::cout << "benchmark finished at "
+              << tf.formatDuration(benchmarkTimer.getDurationNs()) << std::endl;
 
-    printResults(allResults);
+    printResults(allResults.getCopy());
 
     return 0;
 }
