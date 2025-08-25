@@ -28,4 +28,5 @@ enable_testing()
 #add_subdirectory("hw-04-array-queue")
 #add_subdirectory("hw-05-bits")
 #add_subdirectory("hw-06-search-and-sort")
-add_subdirectory("hw-07-quick-merge-external-sort")
+
+add_subdirectory("hw-08-quick-merge-external-sort")
