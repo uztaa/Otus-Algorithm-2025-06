@@ -29,14 +29,13 @@ jobs:
     - name: 📊 Generate HTML coverage report
       run: |
         gcovr --root . \
-              --include '^\./.*\.(cpp|hpp|h)$' \
+              --filter '.*/(src|include)/.*' \
+              --filter '.*/common/.*' \
               --exclude '.*/tests/.*' \
               --exclude '.*/demo/.*' \
-              --exclude '.*/build/.*' \
-              --exclude '.*/_deps/.*' \
+              --exclude '.*/build/_deps/.*' \
               --exclude '.*/CMakeFiles/.*' \
               --exclude '.*/googletest.*' \
-              --exclude '/usr/.*' \
               --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
               --html-details coverage.html \
               --print-summary
