@@ -9,47 +9,34 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: 🔄 Checkout repository
+    - name: 🔄 Checkout
       uses: actions/checkout@v3
-
+      
     - name: 🛠 Install dependencies
-      run: |
-        echo "::group::Installing dependencies"
-        sudo apt-get update
-        sudo apt-get install -y cmake g++ make
-        echo "::endgroup::"
-
-    - name: 🏗 Configure CMake
-      run: |
-        echo "::group::CMake Configuration"
-        cmake -B build -DCMAKE_BUILD_TYPE=Release
-        echo "::endgroup::"
-
+      run: sudo apt-get update && sudo apt-get install -y cmake g++ gcovr
+      
+    - name: 🏗 Configure with coverage
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -g -O0"
+      
     - name: ⚙️ Build
-      run: |
-        echo "::group::Build"
-        cmake --build build --config Release
-        echo "::endgroup::"
-
+      run: cmake --build build
+      
     - name: ✅ Run tests
+      run: ctest --test-dir build --output-on-failure --verbose
+    
+    - name: 📊 Generate HTML coverage report
       run: |
-        echo "::group::Tests"
-        ctest --test-dir build --output-on-failure | tee test.log
-        echo "::endgroup::"
-
-    - name: 📋 Summary Report
-      run: |
-        echo "## ✅ CMake CI Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- Build: **Success**" >> $GITHUB_STEP_SUMMARY
-        echo "- Tests: See below or check artifacts" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🔍 Test Output (Last 20 lines):" >> $GITHUB_STEP_SUMMARY
-        tail -n 20 test.log >> $GITHUB_STEP_SUMMARY
-
-    - name: 📦 Upload test logs
+        gcovr --root . \
+              --exclude '.*/tests/.*' \
+              --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
+              --html-details coverage.html \
+              --print-summary
+    
+    - name: 📤 Upload coverage report
       uses: actions/upload-artifact@v4
+      if: always()
       with:
-        name: test-log
-        path: test.log
+        name: coverage-report-html
+        path: coverage*.html

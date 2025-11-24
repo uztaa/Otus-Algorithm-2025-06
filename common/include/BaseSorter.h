@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Sortable.h"
+#include "SortListener.h"
+#include "SortEvent.h"
+#include <string>
 #include <vector>
 #include <memory>
 

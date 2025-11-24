@@ -1,6 +1,4 @@
 #include "BaseSorter.h"
-#include "SortListener.h"
-#include "SortEvent.h"
 
 /** 
  * @file BaseSorter.cpp
