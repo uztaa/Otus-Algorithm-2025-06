@@ -35,6 +35,7 @@ jobs:
           --exclude '.*/build/.*' \
           --exclude '.*/_deps/.*' \
           --exclude '.*googletest.*' \
+          --exclude '.*CompilerIdCXX.*' \
           --object-directory build \
           --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
           --html-details coverage.html \
