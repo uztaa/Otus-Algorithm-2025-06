@@ -28,12 +28,14 @@ jobs:
       
     - name: 📊 Generate HTML coverage report
       run: |
-        gcovr --root . \
-          --filter '^./' \
-          --exclude '.*test.*' \
+        gcovr \
+          --root . \
+          --filter "${{ github.event.repository.name }}/.*" \
+          --exclude '.*/tests/.*' \
           --exclude '.*/build/.*' \
           --exclude '.*/_deps/.*' \
           --exclude '.*googletest.*' \
+          --object-directory build \
           --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
           --html-details coverage.html \
           --print-summary
