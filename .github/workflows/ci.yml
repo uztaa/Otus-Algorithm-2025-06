@@ -30,14 +30,12 @@ jobs:
       run: |
         gcovr \
           --root . \
-          --filter "${{ github.event.repository.name }}/.*" \
-          --exclude '.*/tests/.*' \
-          --exclude '.*/build/.*' \
-          --exclude '.*/_deps/.*' \
-          --exclude '.*googletest.*' \
+          --exclude '.*CMakeFiles/.*' \
           --exclude '.*CompilerIdCXX.*' \
-          --object-directory build \
-          --gcov-ignore-parse-errors=negative_hits.warn_once_per_file \
+          --exclude '.*CompilerIdC.*' \
+          --exclude '.*cmake/.*' \
+          --exclude '.*/tests/.*' \
+          --gcov-ignore-parse-errors=all \
           --html-details coverage.html \
           --print-summary
               
