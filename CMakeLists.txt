@@ -30,4 +30,6 @@ add_subdirectory(common)
 #add_subdirectory("hw-05-bits")
 #add_subdirectory("hw-06-search-and-sort")
 
+add_subdirectory("hw-07-selectionsort-heapsort")
+
 add_subdirectory("hw-08-quick-merge-external-sort")
