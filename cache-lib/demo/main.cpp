@@ -1,168 +1,272 @@
-#include <cache/Cache.hpp>
-#include <cache/policies/LRUPolicy.hpp>
-#include <cache/listeners/LoggingListener.hpp>
-#include <cache/listeners/StatsListener.hpp>
-
+#include "services/MarketDataService.hpp"
 #include <iostream>
-#include <string>
+#include <iomanip>
+#include <thread>
+#include <vector>
 
 /**
- * @brief Демонстрация возможностей библиотеки кэширования
+ * @brief Демонстрация библиотеки кэширования на примере биржевых данных
  * 
- * Показываем:
- * - Создание кэша с LRU политикой
- * - Базовые операции (put, get, remove, clear)
- * - Работу слушателей (логирование, статистика)
- * - Вытеснение при переполнении
- * - Смену политики в runtime
+ * Сценарии:
+ * 1. Экономия API-запросов — показываем как кэш снижает нагрузку
+ * 2. Мульти-аккаунт торговля — общий кэш для нескольких счетов
+ * 3. Разные стратегии для разных данных
+ * 4. Graceful degradation при rate limit
  */
 
 void printSeparator(const std::string& title) {
-    std::cout << "\n========== " << title << " ==========\n\n";
+    std::cout << "\n" << std::string(60, '=') << "\n";
+    std::cout << "  " << title << "\n";
+    std::cout << std::string(60, '=') << "\n\n";
+}
+
+void printPrice(const std::string& ticker, const MarketData& data) {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "  " << ticker << ": " << data.lastPrice << " " 
+              << "(close: " << data.closePrice << ", "
+              << "high: " << data.dayHigh << ", "
+              << "low: " << data.dayLow << ")\n";
+}
+
+/**
+ * @brief Демо 1: Экономия API-запросов
+ * 
+ * Показываем разницу между работой с кэшем и без.
+ * Без кэша 100 запросов = 100 обращений к API.
+ * С кэшем 100 запросов = 1 обращение к API (при TTL > времени теста).
+ */
+void demoApiSavings() {
+    printSeparator("Demo 1: API Request Savings");
+    
+    // Отключаем задержки для быстрого теста
+    auto api = std::make_shared<StubTinkoffApi>(100, false);
+    MarketDataService service(api, 100, 100, std::chrono::seconds(5));
+    
+    const std::string figi = "BBG004730N88";  // SBER
+    const int requestCount = 50;
+    
+    std::cout << "Requesting price for SBER " << requestCount << " times...\n\n";
+    
+    for (int i = 0; i < requestCount; ++i) {
+        auto price = service.getPrice(figi);
+        if (i == 0) {
+            std::cout << "First request (API call):\n";
+            printPrice("SBER", price);
+            std::cout << "\n";
+        }
+    }
+    
+    service.printStats();
+    
+    std::cout << "Result: " << requestCount << " price requests, but only "
+              << api->getTotalRequests() << " API call(s)!\n";
+    std::cout << "Cache saved " << (requestCount - api->getTotalRequests()) 
+              << " API requests.\n";
+}
+
+/**
+ * @brief Демо 2: Торговый робот на нескольких счетах
+ * 
+ * Три "счёта" (Иванов, Петров, Сидоров) торгуют одними бумагами.
+ * Все используют общий кэш — экономия запросов к API.
+ */
+void demoMultiAccountTrading() {
+    printSeparator("Demo 2: Multi-Account Trading");
+    
+    auto api = std::make_shared<StubTinkoffApi>(100, false);
+    MarketDataService service(api, 100, 100, std::chrono::seconds(2));
+    
+    // Инструменты, которыми торгуем
+    std::vector<std::string> figis = {
+        "BBG004730N88",  // SBER
+        "BBG004730RP0",  // GAZP
+        "BBG004731032"   // LKOH
+    };
+    
+    // "Счета"
+    std::vector<std::string> accounts = {"Иванов", "Петров", "Сидоров"};
+    
+    std::cout << "Three accounts checking prices for SBER, GAZP, LKOH...\n\n";
+    
+    // Каждый счёт проверяет все инструменты
+    for (const auto& account : accounts) {
+        std::cout << "Account " << account << " checks prices:\n";
+        
+        for (const auto& figi : figis) {
+            auto info = service.getInstrument(figi);
+            auto price = service.getPrice(figi);
+            printPrice(info.ticker, price);
+        }
+        std::cout << "\n";
+    }
+    
+    service.printStats();
+    
+    std::cout << "Result: 3 accounts × 3 instruments = 9 logical requests\n";
+    std::cout << "Actual API calls: " << api->getTotalRequests() << "\n";
+    std::cout << "(First account fills the cache, others reuse it)\n";
+}
+
+/**
+ * @brief Демо 3: TTL и устаревание данных
+ * 
+ * Показываем как работает TTL:
+ * - Первый запрос — из API
+ * - Повторные запросы в течение TTL — из кэша
+ * - После истечения TTL — снова из API
+ */
+void demoTtlBehavior() {
+    printSeparator("Demo 3: TTL Behavior");
+    
+    auto api = std::make_shared<StubTinkoffApi>(100, false);
+    
+    // Короткий TTL для демонстрации — 500 мс
+    MarketDataService service(api, 100, 100, std::chrono::milliseconds(500));
+    
+    const std::string figi = "BBG004730N88";  // SBER
+    
+    std::cout << "Price TTL set to 500ms\n\n";
+    
+    // Первый запрос
+    std::cout << "Request 1 (t=0ms):\n";
+    auto price1 = service.getPrice(figi);
+    printPrice("SBER", price1);
+    std::cout << "  API calls: " << api->getTotalRequests() << "\n\n";
+    
+    // Через 200 мс — данные ещё актуальны
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::cout << "Request 2 (t=200ms, within TTL):\n";
+    auto price2 = service.getPrice(figi);
+    printPrice("SBER", price2);
+    std::cout << "  API calls: " << api->getTotalRequests() << " (from cache)\n\n";
+    
+    // Через 600 мс от начала — TTL истёк
+    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    std::cout << "Request 3 (t=600ms, TTL expired):\n";
+    auto price3 = service.getPrice(figi);
+    printPrice("SBER", price3);
+    std::cout << "  API calls: " << api->getTotalRequests() << " (fresh from API)\n\n";
+    
+    std::cout << "Notice: price changed between request 1 and 3 (±3% randomization)\n";
+}
+
+/**
+ * @brief Демо 4: Graceful Degradation при Rate Limit
+ * 
+ * Показываем как кэш помогает пережить превышение лимита API:
+ * - Пытаемся сделать много запросов
+ * - При rate limit используем закэшированные данные
+ */
+void demoRateLimitHandling() {
+    printSeparator("Demo 4: Rate Limit Handling");
+    
+    // Низкий лимит для демонстрации — 5 запросов в минуту
+    auto api = std::make_shared<StubTinkoffApi>(5, false);
+    MarketDataService service(api, 100, 100, std::chrono::seconds(60));
+    
+    const std::string figi = "BBG004730N88";
+    
+    std::cout << "API rate limit set to 5 requests per minute\n";
+    std::cout << "Attempting 10 requests...\n\n";
+    
+    int successCount = 0;
+    int rateLimitCount = 0;
+    int fromCacheCount = 0;
+    
+    for (int i = 0; i < 10; ++i) {
+        try {
+            // getPrice внутри делает запрос к API если нет в кэше
+            auto price = service.getPrice(figi);
+            ++successCount;
+            
+            if (i == 0) {
+                std::cout << "Request " << (i + 1) << ": ";
+                printPrice("SBER", price);
+            } else {
+                ++fromCacheCount;
+            }
+        } catch (const RateLimitExceeded& e) {
+            ++rateLimitCount;
+            
+            // Graceful degradation — используем устаревшие данные
+            auto stale = service.getPriceOrStale(figi);
+            if (stale.has_value()) {
+                std::cout << "Request " << (i + 1) << ": Rate limited, using cached data: "
+                          << stale.value().lastPrice << "\n";
+            } else {
+                std::cout << "Request " << (i + 1) << ": Rate limited, no cached data available\n";
+            }
+        }
+    }
+    
+    std::cout << "\nResults:\n";
+    std::cout << "  Successful API calls: " << api->getTotalRequests() << "\n";
+    std::cout << "  Served from cache: " << fromCacheCount << "\n";
+    std::cout << "  Rate limit hits: " << rateLimitCount << "\n";
+    std::cout << "\nCache allowed to continue serving requests despite rate limit!\n";
+}
+
+/**
+ * @brief Демо 5: Информация об инструментах
+ * 
+ * Показываем кэширование справочных данных.
+ */
+void demoInstrumentInfo() {
+    printSeparator("Demo 5: Instrument Information Cache");
+    
+    auto api = std::make_shared<StubTinkoffApi>(100, false);
+    MarketDataService service(api);
+    
+    std::vector<std::string> figis = {
+        "BBG004730N88",  // SBER
+        "BBG004730RP0",  // GAZP
+        "BBG004731032"   // LKOH
+    };
+    
+    std::cout << "Loading instrument info (first time — from API):\n\n";
+    
+    for (const auto& figi : figis) {
+        auto info = service.getInstrument(figi);
+        std::cout << "  " << info.ticker << " (" << info.name << ")\n";
+        std::cout << "    FIGI: " << info.figi << "\n";
+        std::cout << "    Currency: " << info.currency << "\n";
+        std::cout << "    Lot: " << info.lot << "\n";
+        std::cout << "    Min price increment: " << info.minPriceIncrement << "\n\n";
+    }
+    
+    std::cout << "API calls after first load: " << api->getTotalRequests() << "\n\n";
+    
+    std::cout << "Loading same instruments again (from cache):\n";
+    for (const auto& figi : figis) {
+        auto info = service.getInstrument(figi);
+        std::cout << "  " << info.ticker << " — loaded\n";
+    }
+    
+    std::cout << "\nAPI calls after second load: " << api->getTotalRequests() 
+              << " (no change — all from cache)\n";
+    
+    service.printStats();
 }
 
 int main() {
-    std::cout << "=== Cache Library Demo ===\n";
-
-    // --------------------------------------------------
-    // 1. Базовое использование
-    // --------------------------------------------------
-    printSeparator("1. Basic usage");
+    std::cout << "=== Cache Library Demo: Stock Market Data ===\n";
+    std::cout << "Demonstrating cache usage for Tinkoff Invest API\n";
     
-    // Создаём кэш на 3 элемента с LRU политикой
-    Cache<std::string, int> cache(3, std::make_unique<LRUPolicy<std::string>>());
-    
-    std::cout << "Created cache with capacity: " << cache.capacity() << "\n\n";
-    
-    // Добавляем элементы
-    cache.put("apple", 100);
-    cache.put("banana", 200);
-    cache.put("cherry", 300);
-    
-    std::cout << "Added 3 items. Size: " << cache.size() << "\n";
-    
-    // Получаем значение
-    if (auto value = cache.get("banana")) {
-        std::cout << "banana = " << value.value() << "\n";
+    try {
+        demoApiSavings();
+        demoMultiAccountTrading();
+        demoTtlBehavior();
+        demoRateLimitHandling();
+        demoInstrumentInfo();
+        
+        std::cout << "\n" << std::string(60, '=') << "\n";
+        std::cout << "  Demo Complete!\n";
+        std::cout << std::string(60, '=') << "\n";
+        
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+        return 1;
     }
-    
-    // Проверяем наличие
-    std::cout << "contains('apple'): " << (cache.contains("apple") ? "yes" : "no") << "\n";
-    std::cout << "contains('mango'): " << (cache.contains("mango") ? "yes" : "no") << "\n";
-
-    // --------------------------------------------------
-    // 2. Вытеснение (Eviction)
-    // --------------------------------------------------
-    printSeparator("2. Eviction");
-    
-    // Кэш полон (3 элемента). Добавляем четвёртый — LRU вытеснится.
-    // Порядок использования: banana (только что get), cherry, apple
-    // apple — LRU, он вытеснится
-    
-    std::cout << "Cache is full. Adding 'durian'...\n";
-    cache.put("durian", 400);
-    
-    std::cout << "After adding 'durian':\n";
-    std::cout << "  contains('apple'): " << (cache.contains("apple") ? "yes" : "no") << " (evicted)\n";
-    std::cout << "  contains('banana'): " << (cache.contains("banana") ? "yes" : "no") << "\n";
-    std::cout << "  contains('cherry'): " << (cache.contains("cherry") ? "yes" : "no") << "\n";
-    std::cout << "  contains('durian'): " << (cache.contains("durian") ? "yes" : "no") << "\n";
-
-    // --------------------------------------------------
-    // 3. Слушатели (Listeners)
-    // --------------------------------------------------
-    printSeparator("3. Listeners");
-    
-    // Создаём новый кэш со слушателями
-    Cache<std::string, int> cacheWithListeners(3, std::make_unique<LRUPolicy<std::string>>());
-    
-    // Добавляем логгер
-    auto logger = std::make_shared<LoggingListener<std::string, int>>("MyCache");
-    cacheWithListeners.addListener(logger);
-    
-    // Добавляем сборщик статистики
-    auto stats = std::make_shared<StatsListener<std::string, int>>();
-    cacheWithListeners.addListener(stats);
-    
-    std::cout << "Performing operations with listeners attached:\n\n";
-    
-    cacheWithListeners.put("x", 10);
-    cacheWithListeners.put("y", 20);
-    cacheWithListeners.get("x");           // Hit
-    cacheWithListeners.get("z");           // Miss
-    cacheWithListeners.put("x", 15);       // Update
-    cacheWithListeners.put("z", 30);
-    cacheWithListeners.put("w", 40);       // Evicts "y"
-    
-    std::cout << "\nStatistics:\n";
-    std::cout << "  Hits: " << stats->hits() << "\n";
-    std::cout << "  Misses: " << stats->misses() << "\n";
-    std::cout << "  Hit rate: " << (stats->hitRate() * 100) << "%\n";
-    std::cout << "  Inserts: " << stats->inserts() << "\n";
-    std::cout << "  Updates: " << stats->updates() << "\n";
-    std::cout << "  Evictions: " << stats->evictions() << "\n";
-
-    // --------------------------------------------------
-    // 4. Удаление слушателя
-    // --------------------------------------------------
-    printSeparator("4. Remove listener");
-    
-    std::cout << "Removing logger, keeping stats...\n\n";
-    cacheWithListeners.removeListener(logger);
-    
-    cacheWithListeners.put("new_key", 999);
-    std::cout << "(No log output above)\n";
-    std::cout << "Inserts after removing logger: " << stats->inserts() << "\n";
-
-    // --------------------------------------------------
-    // 5. Смена политики в runtime
-    // --------------------------------------------------
-    printSeparator("5. Change policy at runtime");
-    
-    Cache<int, std::string> numericCache(3, std::make_unique<LRUPolicy<int>>());
-    
-    numericCache.put(1, "one");
-    numericCache.put(2, "two");
-    numericCache.put(3, "three");
-    
-    std::cout << "Before policy change:\n";
-    std::cout << "  Size: " << numericCache.size() << "\n";
-    std::cout << "  get(1): " << numericCache.get(1).value_or("not found") << "\n";
-    
-    // Меняем политику — данные сохраняются, порядок сбрасывается
-    std::cout << "\nChanging to new LRU policy...\n";
-    numericCache.setEvictionPolicy(std::make_unique<LRUPolicy<int>>());
-    
-    std::cout << "After policy change:\n";
-    std::cout << "  Size: " << numericCache.size() << " (data preserved)\n";
-    std::cout << "  get(1): " << numericCache.get(1).value_or("not found") << "\n";
-    std::cout << "  get(2): " << numericCache.get(2).value_or("not found") << "\n";
-    std::cout << "  get(3): " << numericCache.get(3).value_or("not found") << "\n";
-
-    // --------------------------------------------------
-    // 6. Clear и Remove
-    // --------------------------------------------------
-    printSeparator("6. Remove and Clear");
-    
-    Cache<std::string, int> tempCache(10, std::make_unique<LRUPolicy<std::string>>());
-    tempCache.put("a", 1);
-    tempCache.put("b", 2);
-    tempCache.put("c", 3);
-    
-    std::cout << "Initial size: " << tempCache.size() << "\n";
-    
-    bool removed = tempCache.remove("b");
-    std::cout << "remove('b'): " << (removed ? "success" : "not found") << "\n";
-    std::cout << "Size after remove: " << tempCache.size() << "\n";
-    
-    removed = tempCache.remove("nonexistent");
-    std::cout << "remove('nonexistent'): " << (removed ? "success" : "not found") << "\n";
-    
-    tempCache.clear();
-    std::cout << "Size after clear: " << tempCache.size() << "\n";
-
-    // --------------------------------------------------
-    std::cout << "\n=== Demo complete ===\n";
     
     return 0;
 }

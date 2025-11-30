@@ -26,8 +26,8 @@ target_link_libraries(cache-tests GTest::gtest_main)
 gtest_discover_tests(cache-tests)
 
 # Demo
-file(GLOB DEMO_SOURCES demo/*.cpp)
-add_executable(cache-demo ${DEMO_SOURCES})
+add_executable(cache-demo demo/main.cpp)
+target_include_directories(cache-demo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/demo)
 
 # Benchmarks
 file(GLOB BENCH_SOURCES benchmarks/*.cpp)
