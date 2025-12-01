@@ -34,4 +34,6 @@ add_subdirectory("hw-07-selectionsort-heapsort")
 
 add_subdirectory("hw-08-quick-merge-external-sort")
 
+add_subdirectory("hw-09-counting-radix-bucket-sort")
+
 add_subdirectory("cache-lib")
