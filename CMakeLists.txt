@@ -40,4 +40,6 @@ add_subdirectory("hw-10-bst-avl-treap")
 
 add_subdirectory("hw-12-hash")
 
+add_subdirectory("hw-13-trie")
+
 add_subdirectory("cache-lib")
