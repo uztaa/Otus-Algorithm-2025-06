@@ -38,4 +38,6 @@ add_subdirectory("hw-09-counting-radix-bucket-sort")
 
 add_subdirectory("hw-10-bst-avl-treap")
 
+add_subdirectory("hw-12-hash")
+
 add_subdirectory("cache-lib")
