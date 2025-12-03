@@ -42,4 +42,6 @@ add_subdirectory("hw-12-hash")
 
 add_subdirectory("hw-13-trie")
 
+add_subdirectory("hw-15-demucron")
+
 add_subdirectory("cache-lib")
