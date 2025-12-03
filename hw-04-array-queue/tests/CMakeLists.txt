@@ -1,19 +1,19 @@
-set(TEST_SOURCES
-    "all_test_runner.cpp"
-    "SingleArrayTest.cpp"
-    "VectorArrayTest.cpp"
-    "FactorArrayTest.cpp"
-    "MatrixArrayTest.cpp"
-    "LinkedListTests.cpp" 
-    "DoublyLinkedListTests.cpp" 
-    "PriorityQueueArrayListTest.cpp"
-    "SpaceArrayTest.cpp" 
+add_executable(arrays_tests
+    all_test_runner.cpp
+    DoublyLinkedListTests.cpp
+    FactorArrayTest.cpp
+    LinkedListTests.cpp
+    MatrixArrayTest.cpp
+    PriorityQueueArrayListTest.cpp
+    SingleArrayTest.cpp
+    SpaceArrayTest.cpp
+    VectorArrayTest.cpp
 )
 
-add_executable(ArrayQueueTests ${TEST_SOURCES})
+target_link_libraries(arrays_tests PRIVATE
+    arrayslib
+    gtest
+    gtest_main
+)
 
-target_include_directories(ArrayQueueTests PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(ArrayQueueTests gtest_main)
-
-include(GoogleTest)
-gtest_discover_tests(ArrayQueueTests)
+add_test(NAME arrays_tests COMMAND arrays_tests)

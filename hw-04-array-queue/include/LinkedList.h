@@ -3,11 +3,15 @@
 #include "Array.h"
 #include <stdexcept>
 
-// реализация односвязного списка
+/**
+ * @brief РћРґРЅРѕСЃРІСЏР·РЅС‹Р№ СЃРїРёСЃРѕРє, СЂРµР°Р»РёР·СѓСЋС‰РёР№ РёРЅС‚РµСЂС„РµР№СЃ Array<T>
+ */
 template<typename T>
 class LinkedList : public Array<T> {
 private:
-    // структура ноды
+    /**
+     * @brief РЈР·РµР» РѕРґРЅРѕСЃРІСЏР·РЅРѕРіРѕ СЃРїРёСЃРєР°
+     */
     struct Node {
         T data;
         Node* next;
@@ -76,7 +80,9 @@ public:
         return count;
     }
 
-    // Конструктор копирования
+   /**
+    * @brief РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
+    */
     LinkedList(const LinkedList& other) : head(nullptr), count(0) {
         Node* current = other.head;
         while (current) {
@@ -85,7 +91,9 @@ public:
         }
     }
 
-    // Оператор присваивания
+    /**
+     * @brief РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ РєРѕРїРёСЂРѕРІР°РЅРёРµРј
+     */
     LinkedList& operator=(const LinkedList& other) {
         if (this != &other) {
             while (head) {

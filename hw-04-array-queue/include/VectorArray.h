@@ -3,18 +3,36 @@
 #include "Array.h"
 #include <stdexcept>
 
-// Реализация динамического массива с увеличением ёмкости на фиксированный шаг
-template<typename T>
-class VectorArray : public Array<T> {
+/**
+ * @brief РљР»Р°СЃСЃ РІРµРєС‚РѕСЂРЅРѕРіРѕ РјР°СЃСЃРёРІР°, СЂРµР°Р»РёР·СѓСЋС‰РёР№ РёРЅС‚РµСЂС„РµР№СЃ Array
+ * @tparam T РўРёРї СЌР»РµРјРµРЅС‚РѕРІ РјР°СЃСЃРёРІР°
+ */
+template <typename T>
+class VectorArray : public Array<T>
+{
 private:
-    T* data;
+    /**
+     * @brief РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РґРёРЅР°РјРёС‡РµСЃРєРёР№ РјР°СЃСЃРёРІ СЌР»РµРјРµРЅС‚РѕРІ
+     */
+    T *data;
+    /**
+     * @brief РўРµРєСѓС‰Р°СЏ С‘РјРєРѕСЃС‚СЊ РјР°СЃСЃРёРІР°
+     */
     int capacity;
+    /**
+     * @brief РўРµРєСѓС‰РёР№ СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР°
+     */
     int count;
-    const int capacityIncr = 10; // шаг наращивания памяти
+    /**
+     * @brief РЁР°Рі СѓРІРµР»РёС‡РµРЅРёСЏ С‘РјРєРѕСЃС‚Рё РјР°СЃСЃРёРІР°
+     */
+    const int capacityIncr = 10;
 
-    void resize() {
-        T* newData = new T[capacity + capacityIncr];
-        for (int i = 0; i < count; ++i) {
+    void resize()
+    {
+        T *newData = new T[capacity + capacityIncr];
+        for (int i = 0; i < count; ++i)
+        {
             newData[i] = data[i];
         }
         delete[] data;
@@ -25,16 +43,20 @@ private:
 public:
     VectorArray() : data(nullptr), capacity(0), count(0) {}
 
-    ~VectorArray() {
+    ~VectorArray()
+    {
         delete[] data;
     }
 
-    void add(T item, int index) override {
+    void add(T item, int index) override
+    {
         Array<T>::check_index_for_insert(index, count);
 
-        if (count >= capacity) resize();
+        if (count >= capacity)
+            resize();
 
-        for (int i = count; i > index; --i) {
+        for (int i = count; i > index; --i)
+        {
             data[i] = data[i - 1];
         }
 
@@ -42,23 +64,27 @@ public:
         ++count;
     }
 
-    T remove(int index) override {
+    T remove(int index) override
+    {
         Array<T>::check_index(index, count);
 
         T removed = data[index];
-        for (int i = index; i < count - 1; ++i) {
+        for (int i = index; i < count - 1; ++i)
+        {
             data[i] = data[i + 1];
         }
         --count;
         return removed;
     }
 
-    T get(int index) const override {
+    T get(int index) const override
+    {
         Array<T>::check_index(index, count);
         return data[index];
     }
 
-    int size() const override {
+    int size() const override
+    {
         return count;
     }
 };

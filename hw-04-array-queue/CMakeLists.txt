@@ -1,12 +1,24 @@
-﻿project(ArrayQueue)
+﻿cmake_minimum_required(VERSION 3.15)
 
-# Подключаем интерфейсы из папки include
-include_directories(include)
+project(hw04_array_queue LANGUAGES CXX)
 
-# Основное приложение
-add_executable(ArrayQueue
-    "src/benchmark.cpp"
- "include/Array.h" "include/SingleArray.h"  "include/VectorArray.h" "include/FactorArray.h" "include/MatrixArray.h" "include/LinkedList.h" "include/DoublyLinkedList.h" "include/PriorityQueueArrayList.h")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Добавляем тесты
+# --------------------------
+# Header-only Library
+# --------------------------
+add_library(arrayslib INTERFACE)
+
+target_include_directories(arrayslib INTERFACE include)
+
+# --------------------------
+# Benchmark
+# --------------------------
+add_executable(arrays_benchmark src/benchmark.cpp)
+target_link_libraries(arrays_benchmark PRIVATE arrayslib)
+
+# --------------------------
+# Tests
+# --------------------------
 add_subdirectory(tests)
