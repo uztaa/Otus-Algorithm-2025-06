@@ -26,7 +26,11 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(tests tests/DemukronTests.cpp)
+add_executable(tests 
+    tests/BridgesAPTests.cpp
+    tests/DemukronTests.cpp
+    tests/TarjanSCCTests.cpp
+)
 target_link_libraries(tests
     graph_algorithms
     arrayslib
