@@ -44,4 +44,6 @@ add_subdirectory("hw-13-trie")
 
 add_subdirectory("hw-15-demucron")
 
+add_subdirectory("hw-16-mst")
+
 add_subdirectory("cache-lib")
