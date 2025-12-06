@@ -46,4 +46,6 @@ add_subdirectory("hw-15-demucron")
 
 add_subdirectory("hw-16-mst")
 
+add_subdirectory("hw-21-dynamic-programming")
+
 add_subdirectory("cache-lib")
