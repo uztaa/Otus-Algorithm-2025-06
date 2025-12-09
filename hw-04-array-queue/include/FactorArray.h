@@ -2,7 +2,7 @@
 
 #include "Array.h"
 #include <stdexcept>
-#include <memory> // ��� std::unique_ptr
+#include <memory>
 
 /**
  * @brief Реализация динамического массива с увеличением ёмкости в заданный фактор

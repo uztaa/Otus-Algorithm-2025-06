@@ -1,17 +1,17 @@
-project(hw-16-mst VERSION 1.0.0 LANGUAGES CXX)
+project(hw-17-shortest-paths VERSION 1.0.0 LANGUAGES CXX)
 
 # ============================================
-# Библиотека MST алгоритмов (header-only)
+# Библиотека алгоритмов кратчайших путей (header-only)
 # ============================================
-add_library(mst_algorithms INTERFACE)
-target_include_directories(mst_algorithms INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(mst_algorithms INTERFACE arrayslib)
+add_library(shortest_paths INTERFACE)
+target_include_directories(shortest_paths INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(shortest_paths INTERFACE arrayslib)
 
 # ============================================
 # Демонстрационное приложение
 # ============================================
-add_executable(hw16_demo demo/main.cpp)
-target_link_libraries(hw16_demo mst_algorithms arrayslib)
+add_executable(hw17_demo demo/main.cpp)
+target_link_libraries(hw17_demo shortest_paths arrayslib)
 
 # ============================================
 # Тесты (GoogleTest)
@@ -26,18 +26,16 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(hw16_tests 
-    tests/UnionFindTest.cpp
-    tests/KruskalMSTTest.cpp
-    tests/PrimMSTTest.cpp
-    tests/BoruvkaMSTTest.cpp
+add_executable(hw17_tests
+    tests/DijkstraTest.cpp
+    tests/FloydWarshallTest.cpp
 )
 
-target_link_libraries(hw16_tests
-    mst_algorithms
+target_link_libraries(hw17_tests
+    shortest_paths
     arrayslib
     GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(hw16_tests)
+gtest_discover_tests(hw17_tests)
