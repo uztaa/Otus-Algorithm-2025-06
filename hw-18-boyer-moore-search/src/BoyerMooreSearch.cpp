@@ -116,7 +116,7 @@ int BoyerMooreSearch::search(const std::string& text) {
     const int m = static_cast<int>(pattern_.length());
     
     if (m == 0) {
-        return 0;
+        return -1;
     }
     
     if (m > n) {

@@ -13,9 +13,8 @@ int NaiveSearch::search(const std::string& text) {
     const int n = static_cast<int>(text.length());
     const int m = static_cast<int>(pattern_.length());
     
-    // Пустой образец найден в начале
     if (m == 0) {
-        return 0;
+        return -1;
     }
     
     // Образец длиннее текста

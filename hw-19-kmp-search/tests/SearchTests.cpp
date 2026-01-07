@@ -4,25 +4,25 @@
 #include <vector>
 
 #include "search/IStringSearch.hpp"
-#include "search/NaiveSearch.hpp"
-#include "search/BMHSearch.hpp"
-#include "search/BoyerMooreSearch.hpp"
+#include "search/AutomatonSearch.hpp"
+#include "search/KMPSearchSlow.hpp"
+#include "search/KMPSearch.hpp"
 
 // ============================================
 // Параметризованные тесты для всех алгоритмов
 // ============================================
 
 enum class AlgorithmType {
-    Naive,
-    BMH,
-    BoyerMoore
+    Automaton,
+    KMPSlow,
+    KMP
 };
 
 std::string algorithmName(AlgorithmType type) {
     switch (type) {
-        case AlgorithmType::Naive: return "Naive";
-        case AlgorithmType::BMH: return "BMH";
-        case AlgorithmType::BoyerMoore: return "BoyerMoore";
+        case AlgorithmType::Automaton: return "Automaton";
+        case AlgorithmType::KMPSlow: return "KMPSlow";
+        case AlgorithmType::KMP: return "KMP";
     }
     return "Unknown";
 }
@@ -31,12 +31,12 @@ class SearchTest : public ::testing::TestWithParam<AlgorithmType> {
 protected:
     std::unique_ptr<IStringSearch> createSearcher() {
         switch (GetParam()) {
-            case AlgorithmType::Naive:
-                return std::make_unique<NaiveSearch>();
-            case AlgorithmType::BMH:
-                return std::make_unique<BMHSearch>();
-            case AlgorithmType::BoyerMoore:
-                return std::make_unique<BoyerMooreSearch>();
+            case AlgorithmType::Automaton:
+                return std::make_unique<AutomatonSearch>();
+            case AlgorithmType::KMPSlow:
+                return std::make_unique<KMPSearchSlow>();
+            case AlgorithmType::KMP:
+                return std::make_unique<KMPSearch>();
         }
         return nullptr;
     }
@@ -98,7 +98,7 @@ TEST_P(SearchTest, PatternNotFound) {
 TEST_P(SearchTest, SingleCharPattern) {
     auto searcher = createSearcher();
     searcher->setPattern("A");
-    EXPECT_EQ(searcher->search("BANANA"), 1);  // Первое 'A' на позиции 1
+    EXPECT_EQ(searcher->search("BANANA"), 1);
 }
 
 TEST_P(SearchTest, SingleCharText) {
@@ -170,22 +170,16 @@ TEST_P(SearchTest, SearchAllEmptyPattern) {
 // Тесты из презентации
 // ============================================
 
-TEST_P(SearchTest, KolokolExample) {
+TEST_P(SearchTest, ABCExample) {
     auto searcher = createSearcher();
-    searcher->setPattern("KOLOKOL");
-    // K O L K O K O L O K O L  L
-    // 0 1 2 3 4 5 6 7 8 9 10 11 12
-    //           K O L O K O L  ← совпадение на позиции 5
-    EXPECT_EQ(searcher->search("KOLKOKOLOKOLL"), 5);
-}
-
-TEST_P(SearchTest, KolokolSearchAll) {
-    auto searcher = createSearcher();
-    searcher->setPattern("KOLOKOL");
-    auto results = searcher->searchAll("KOLKOKOLOKOLL");
+    searcher->setPattern("ABABC");
+    // Текст из презентации: ABABABCCBBABABCAB
+    auto results = searcher->searchAll("ABABABCCBBABABCAB");
     
-    ASSERT_EQ(results.size(), 1u);
-    EXPECT_EQ(results[0], 5);
+    // Позиции: 2 и 10
+    ASSERT_EQ(results.size(), 2u);
+    EXPECT_EQ(results[0], 2);
+    EXPECT_EQ(results[1], 10);
 }
 
 // ============================================
@@ -195,12 +189,10 @@ TEST_P(SearchTest, KolokolSearchAll) {
 TEST_P(SearchTest, ReuseWithSetPattern) {
     auto searcher = createSearcher();
     
-    // Первый pattern
     searcher->setPattern("ABC");
     EXPECT_EQ(searcher->search("ABCDEF"), 0);
     EXPECT_EQ(searcher->getPattern(), "ABC");
     
-    // Второй pattern — объект переиспользуется
     searcher->setPattern("DEF");
     EXPECT_EQ(searcher->search("ABCDEF"), 3);
     EXPECT_EQ(searcher->getPattern(), "DEF");
@@ -214,7 +206,6 @@ TEST_P(SearchTest, StatsResetOnSetPattern) {
     size_t firstCount = searcher->getComparisonCount();
     EXPECT_GT(firstCount, 0u);
     
-    // setPattern должен сбросить счётчик
     searcher->setPattern("XYZ");
     EXPECT_EQ(searcher->getComparisonCount(), 0u);
 }
@@ -234,32 +225,19 @@ TEST_P(SearchTest, ManualStatsReset) {
 // Специальные случаи
 // ============================================
 
-TEST_P(SearchTest, WorstCaseForNaive) {
+TEST_P(SearchTest, WorstCaseRepeating) {
     auto searcher = createSearcher();
     
-    // Худший случай: "AAAB" в "AAAA...A"
     std::string text(100, 'A');
     searcher->setPattern("AAAB");
     EXPECT_EQ(searcher->search(text), -1);
-}
-
-TEST_P(SearchTest, BestCaseForBoyerMoore) {
-    auto searcher = createSearcher();
-    
-    // Лучший случай: образец с уникальными символами, не в тексте
-    std::string text(1000, 'A');
-    searcher->setPattern("BCDEF");
-    EXPECT_EQ(searcher->search(text), -1);
-    
-    // Boyer-Moore и BMH должны сделать мало сравнений
-    // (пропуская по 5 символов за раз)
 }
 
 TEST_P(SearchTest, LongPatternInLongText) {
     auto searcher = createSearcher();
     
     std::string text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    text += text;  // 52 символа
+    text += text;
     
     searcher->setPattern("MNOPQRST");
     
@@ -269,12 +247,8 @@ TEST_P(SearchTest, LongPatternInLongText) {
     auto all = searcher->searchAll(text);
     ASSERT_EQ(all.size(), 2u);
     EXPECT_EQ(all[0], 12);
-    EXPECT_EQ(all[1], 38);  // 12 + 26
+    EXPECT_EQ(all[1], 38);
 }
-
-// ============================================
-// Тест getName()
-// ============================================
 
 TEST_P(SearchTest, GetNameNotEmpty) {
     auto searcher = createSearcher();
@@ -289,9 +263,9 @@ INSTANTIATE_TEST_SUITE_P(
     AllAlgorithms,
     SearchTest,
     ::testing::Values(
-        AlgorithmType::Naive,
-        AlgorithmType::BMH,
-        AlgorithmType::BoyerMoore
+        AlgorithmType::Automaton,
+        AlgorithmType::KMPSlow,
+        AlgorithmType::KMP
     ),
     [](const testing::TestParamInfo<AlgorithmType>& info) {
         return algorithmName(info.param);
@@ -302,56 +276,128 @@ INSTANTIATE_TEST_SUITE_P(
 // Отдельные тесты для конструкторов
 // ============================================
 
-TEST(NaiveSearchTest, ConstructorWithPattern) {
-    NaiveSearch searcher("ABC");
+TEST(AutomatonSearchTest, ConstructorWithPattern) {
+    AutomatonSearch searcher("ABC");
     EXPECT_EQ(searcher.getPattern(), "ABC");
     EXPECT_EQ(searcher.search("ABCDEF"), 0);
 }
 
-TEST(BMHSearchTest, ConstructorWithPattern) {
-    BMHSearch searcher("ABC");
+TEST(KMPSearchSlowTest, ConstructorWithPattern) {
+    KMPSearchSlow searcher("ABC");
     EXPECT_EQ(searcher.getPattern(), "ABC");
     EXPECT_EQ(searcher.search("ABCDEF"), 0);
 }
 
-TEST(BoyerMooreSearchTest, ConstructorWithPattern) {
-    BoyerMooreSearch searcher("ABC");
+TEST(KMPSearchTest, ConstructorWithPattern) {
+    KMPSearch searcher("ABC");
     EXPECT_EQ(searcher.getPattern(), "ABC");
     EXPECT_EQ(searcher.search("ABCDEF"), 0);
 }
 
 // ============================================
-// Тесты таблицы good suffix для Boyer-Moore
+// Тесты π-функции
 // ============================================
 
-TEST(BoyerMooreSearchTest, GoodSuffixKolokol) {
-    BoyerMooreSearch searcher("KOLOKOL");
+TEST(PrefixFunctionTest, SlowAndFastProduceSameResult) {
+    std::vector<std::string> patterns = {
+        "ABABC",
+        "AAAA",
+        "ABCABC",
+        "ABACABA",
+        "A",
+        "AB",
+        "",
+        "AABAAAB"
+    };
     
-    // K O L K O K O L O K O L  L
-    // 0 1 2 3 4 5 6 7 8 9 10 11 12
-    //           K O L O K O L  ← совпадение на позиции 5
-    EXPECT_EQ(searcher.search("KOLKOKOLOKOLL"), 5);
-    
-    // Проверяем количество сравнений (должно быть меньше, чем у наивного)
-    size_t bmComparisons = searcher.getComparisonCount();
-    
-    NaiveSearch naive("KOLOKOL");
-    naive.search("KOLKOKOLOKOLL");
-    size_t naiveComparisons = naive.getComparisonCount();
-    
-    // Boyer-Moore должен сделать не больше сравнений, чем наивный
-    EXPECT_LE(bmComparisons, naiveComparisons);
+    for (const auto& pattern : patterns) {
+        KMPSearchSlow slow(pattern);
+        KMPSearch fast(pattern);
+        
+        EXPECT_EQ(slow.getPrefixFunction(), fast.getPrefixFunction())
+            << "Mismatch for pattern: " << pattern;
+    }
 }
 
-TEST(BoyerMooreSearchTest, ComplexPatternSuffix) {
-    // Паттерн с повторяющимися подстроками
-    BoyerMooreSearch searcher("ABCABC");
+TEST(PrefixFunctionTest, ABABC) {
+    KMPSearch kmp("ABABC");
+    const auto& pi = kmp.getPrefixFunction();
     
-    EXPECT_EQ(searcher.search("XYZABCABCDEF"), 3);
+    // A B A B C
+    // 0 0 1 2 0
+    ASSERT_EQ(pi.size(), 5u);
+    EXPECT_EQ(pi[0], 0);
+    EXPECT_EQ(pi[1], 0);
+    EXPECT_EQ(pi[2], 1);
+    EXPECT_EQ(pi[3], 2);
+    EXPECT_EQ(pi[4], 0);
+}
+
+TEST(PrefixFunctionTest, AAAA) {
+    KMPSearch kmp("AAAA");
+    const auto& pi = kmp.getPrefixFunction();
     
-    auto all = searcher.searchAll("ABCABCABCABC");
-    ASSERT_EQ(all.size(), 3u);
-    EXPECT_EQ(all[0], 0);
-    EXPECT_EQ(all[1], 3);
-    EXPECT_EQ(all[2], 6);
+    // A A A A
+    // 0 1 2 3
+    ASSERT_EQ(pi.size(), 4u);
+    EXPECT_EQ(pi[0], 0);
+    EXPECT_EQ(pi[1], 1);
+    EXPECT_EQ(pi[2], 2);
+    EXPECT_EQ(pi[3], 3);
+}
+
+TEST(PrefixFunctionTest, ABCABC) {
+    KMPSearch kmp("ABCABC");
+    const auto& pi = kmp.getPrefixFunction();
+    
+    // A B C A B C
+    // 0 0 0 1 2 3
+    ASSERT_EQ(pi.size(), 6u);
+    EXPECT_EQ(pi[0], 0);
+    EXPECT_EQ(pi[1], 0);
+    EXPECT_EQ(pi[2], 0);
+    EXPECT_EQ(pi[3], 1);
+    EXPECT_EQ(pi[4], 2);
+    EXPECT_EQ(pi[5], 3);
+}
+
+TEST(PrefixFunctionTest, ABACABA) {
+    KMPSearch kmp("ABACABA");
+    const auto& pi = kmp.getPrefixFunction();
+    
+    // A B A C A B A
+    // 0 0 1 0 1 2 3
+    ASSERT_EQ(pi.size(), 7u);
+    EXPECT_EQ(pi[0], 0);
+    EXPECT_EQ(pi[1], 0);
+    EXPECT_EQ(pi[2], 1);
+    EXPECT_EQ(pi[3], 0);
+    EXPECT_EQ(pi[4], 1);
+    EXPECT_EQ(pi[5], 2);
+    EXPECT_EQ(pi[6], 3);
+}
+
+// ============================================
+// Тест: KMP находит то же, что и медленный
+// ============================================
+
+TEST(KMPConsistencyTest, SlowAndFastFindSamePositions) {
+    std::vector<std::pair<std::string, std::string>> testCases = {
+        {"ABABC", "ABABABCCBBABABCAB"},
+        {"AAA", "AAAAAAA"},
+        {"ABC", "ABCABCABC"},
+        {"XY", "XXXXYXYXYYYY"},
+        {"ABAB", "ABABABABAB"}
+    };
+    
+    for (const auto& [pattern, text] : testCases) {
+        KMPSearchSlow slow(pattern);
+        KMPSearch fast(pattern);
+        
+        EXPECT_EQ(slow.search(text), fast.search(text))
+            << "search() mismatch for pattern=" << pattern << ", text=" << text;
+        
+        EXPECT_EQ(slow.searchAll(text), fast.searchAll(text))
+            << "searchAll() mismatch for pattern=" << pattern << ", text=" << text;
+    }
 }
