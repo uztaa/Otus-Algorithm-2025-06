@@ -52,6 +52,8 @@ add_subdirectory("hw-18-boyer-moore-search")
 
 add_subdirectory("hw-19-kmp-search")
 
+add_subdirectory("hw-20-compression")
+
 add_subdirectory("hw-21-dynamic-programming")
 
 add_subdirectory("cache-lib")
