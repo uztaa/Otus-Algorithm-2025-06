@@ -48,6 +48,8 @@ add_subdirectory("hw-16-mst")
 
 add_subdirectory("hw-17-shortest-paths")
 
+add_subdirectory("hw-18-boyer-moore-search")
+
 add_subdirectory("hw-21-dynamic-programming")
 
 add_subdirectory("cache-lib")
