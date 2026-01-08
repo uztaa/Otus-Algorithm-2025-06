@@ -56,4 +56,6 @@ add_subdirectory("hw-20-compression")
 
 add_subdirectory("hw-21-dynamic-programming")
 
+add_subdirectory("hw-22-probabilistic")
+
 add_subdirectory("cache-lib")
